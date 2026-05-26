@@ -158,59 +158,65 @@ router.post('/:id/candidates', async (req, res) => {
   const candidatesData = req.body; // Expects array of candidate objects
 
   if (mongoose.connection.readyState !== 1) {
-    console.log('Database offline: Uploading candidates to memory.');
-    const campaign = inMemoryCampaigns.find(c => c._id === campaignId);
-    if (!campaign) {
-      return res.status(404).json({ message: 'Campaign not found' });
+    try {
+      console.log('Database offline: Uploading candidates to memory.');
+      const campaign = inMemoryCampaigns.find(c => c._id === campaignId);
+      if (!campaign) {
+        return res.status(404).json({ message: 'Campaign not found' });
+      }
+
+      // Clear existing candidates
+      inMemoryCandidates = inMemoryCandidates.filter(c => c.campaignId !== campaignId);
+
+      // Map and insert
+      const mapped = candidatesData.map(c => {
+        if (!c) return null;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailVal = c.email || '';
+        const isValidEmail = emailRegex.test(emailVal.trim());
+        const status = isValidEmail ? 'Validated' : 'Invalid Email';
+
+        const name = c.name || '';
+        const email = emailVal;
+        const role = c.Role || c.role || '';
+        const department = c.Organization || c.department || '';
+        const salary = ''; 
+        const joiningDate = c['Start Date'] || c.joiningDate || '';
+
+        const customFields = {};
+        Object.keys(c).forEach(key => {
+          const lowerKey = key.toLowerCase();
+          if (!['name', 'email', 'role', 'department', 'salary', 'joining date', 'joiningdate', 'start date'].includes(lowerKey)) {
+            customFields[key] = c[key] ? c[key].toString() : '';
+          }
+        });
+
+        return {
+          _id: 'mock-cand-' + Math.random().toString(36).substr(2, 9),
+          campaignId,
+          name,
+          email,
+          role,
+          department,
+          salary,
+          joiningDate,
+          status,
+          customFields
+        };
+      }).filter(c => c !== null);
+
+      inMemoryCandidates.push(...mapped);
+
+      // Update campaign metrics
+      campaign.totalCount = mapped.length;
+      campaign.sentCount = 0;
+      campaign.failedCount = 0;
+
+      return res.status(201).json(mapped);
+    } catch (err) {
+      console.error('Error in offline upload candidates:', err);
+      return res.status(500).json({ message: err.message });
     }
-
-    // Clear existing candidates
-    inMemoryCandidates = inMemoryCandidates.filter(c => c.campaignId !== campaignId);
-
-    // Map and insert
-    const mapped = candidatesData.map(c => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const emailVal = c.email || '';
-      const isValidEmail = emailRegex.test(emailVal.trim());
-      const status = isValidEmail ? 'Validated' : 'Invalid Email';
-
-      const name = c.name || '';
-      const email = emailVal;
-      const role = c.Role || c.role || '';
-      const department = c.Organization || c.department || '';
-      const salary = ''; 
-      const joiningDate = c['Start Date'] || c.joiningDate || '';
-
-      const customFields = {};
-      Object.keys(c).forEach(key => {
-        const lowerKey = key.toLowerCase();
-        if (!['name', 'email', 'role', 'department', 'salary', 'joining date', 'joiningdate', 'start date'].includes(lowerKey)) {
-          customFields[key] = c[key] ? c[key].toString() : '';
-        }
-      });
-
-      return {
-        _id: 'mock-cand-' + Math.random().toString(36).substr(2, 9),
-        campaignId,
-        name,
-        email,
-        role,
-        department,
-        salary,
-        joiningDate,
-        status,
-        customFields
-      };
-    });
-
-    inMemoryCandidates.push(...mapped);
-
-    // Update campaign metrics
-    campaign.totalCount = mapped.length;
-    campaign.sentCount = 0;
-    campaign.failedCount = 0;
-
-    return res.status(201).json(mapped);
   }
 
   try {
@@ -224,6 +230,7 @@ router.post('/:id/candidates', async (req, res) => {
 
     // Map and insert
     const candidates = candidatesData.map(c => {
+      if (!c) return null;
       // Standard email regex validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const emailVal = c.email || '';
@@ -259,7 +266,7 @@ router.post('/:id/candidates', async (req, res) => {
         status,
         customFields
       };
-    });
+    }).filter(c => c !== null);
 
     const inserted = await Candidate.insertMany(candidates);
 
