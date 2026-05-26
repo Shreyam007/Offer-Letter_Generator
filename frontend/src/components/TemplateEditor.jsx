@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useApp, AICTE_LOGO_SVG } from '../context/AppContext';
+import { useApp, AICTE_LOGO_SVG, API_BASE } from '../context/AppContext';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -266,7 +266,7 @@ Sincerely,
       
       // Update campaign in backend to point to this template
       if (currentCampaign) {
-        await fetch(`http://localhost:5000/api/campaigns/${currentCampaign._id}`, {
+        await fetch(`${API_BASE}/campaigns/${currentCampaign._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ templateId: saved._id })
@@ -291,7 +291,7 @@ Sincerely,
       // Update company logo in database
       if (selectedCompany) {
         try {
-          const res = await fetch(`http://localhost:5000/api/companies/${selectedCompany._id}`, {
+          const res = await fetch(`${API_BASE}/companies/${selectedCompany._id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ logo: base64Data })

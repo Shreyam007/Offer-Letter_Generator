@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useApp, AICTE_LOGO_SVG } from '../context/AppContext';
+import { useApp, AICTE_LOGO_SVG, API_BASE } from '../context/AppContext';
 import { 
   FileText, 
   Download, 
@@ -30,7 +30,7 @@ const HistoryTab = () => {
     setDrawerOpen(true);
     setLoadingCandidates(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/campaigns/${campaign._id}/candidates`);
+      const res = await fetch(`${API_BASE}/campaigns/${campaign._id}/candidates`);
       const data = await res.json();
       setCampaignCandidates(data);
     } catch (err) {

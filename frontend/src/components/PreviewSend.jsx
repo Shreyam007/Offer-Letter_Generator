@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useApp, AICTE_LOGO_SVG } from '../context/AppContext';
+import { useApp, AICTE_LOGO_SVG, API_BASE } from '../context/AppContext';
 import { 
   ArrowLeft, 
   Send, 
@@ -60,7 +60,7 @@ const PreviewSend = () => {
         await loadCampaigns();
         
         // Check if sending completed
-        const freshCandidates = await fetch(`http://localhost:5000/api/campaigns/${currentCampaign._id}/candidates`).then(r => r.json());
+        const freshCandidates = await fetch(`${API_BASE}/campaigns/${currentCampaign._id}/candidates`).then(r => r.json());
         const targetCandidates = freshCandidates.filter(c => selectedCandidateIds.includes(c._id));
         
         // Alert on status transitions
