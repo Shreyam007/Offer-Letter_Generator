@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import seedDatabase from './config/seed.js';
+import mongoose from 'mongoose';
+import { inMemoryCampaigns, inMemoryCandidates } from './routes/campaigns.js';
+
 
 // Route imports
 import companyRoutes from './routes/companies.js';
@@ -38,6 +41,17 @@ app.use('/api/email', emailRoutes);
 app.get('/', (req, res) => {
   res.send('OfferFlow HR API is running...');
 });
+
+// Diagnostics endpoint
+app.get('/api/debug-state', (req, res) => {
+  res.json({
+    mongooseReadyState: mongoose.connection.readyState,
+    mongooseHost: mongoose.connection.host,
+    inMemoryCampaignsCount: inMemoryCampaigns.length,
+    inMemoryCandidatesCount: inMemoryCandidates.length,
+  });
+});
+
 
 const PORT = process.env.PORT || 5000;
 
