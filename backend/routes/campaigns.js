@@ -1,12 +1,36 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import Campaign from '../models/Campaign.js';
 import Candidate from '../models/Candidate.js';
 import History from '../models/History.js';
+import { inMemoryCompanies } from './companies.js';
+import { inMemoryTemplates } from './templates.js';
 
 const router = express.Router();
 
+// Local in-memory store for campaigns and candidates
+let inMemoryCampaigns = [];
+let inMemoryCandidates = [];
+
+// Helper to populate in-memory campaign
+const populateCampaign = (camp) => {
+  const targetCompanyId = typeof camp.companyId === 'object' ? camp.companyId._id : camp.companyId;
+  const targetTemplateId = typeof camp.templateId === 'object' ? camp.templateId._id : camp.templateId;
+  
+  const comp = inMemoryCompanies.find(c => c._id === targetCompanyId);
+  const temp = inMemoryTemplates.find(t => t._id === targetTemplateId);
+  
+  return { ...camp, companyId: comp || camp.companyId, templateId: temp || camp.templateId };
+};
+
 // GET all campaigns with their details
 router.get('/', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Returning in-memory campaigns.');
+    const populated = inMemoryCampaigns.map(populateCampaign);
+    return res.json(populated);
+  }
+
   try {
     const campaigns = await Campaign.find({})
       .populate('companyId')
@@ -14,13 +38,34 @@ router.get('/', async (req, res) => {
       .sort({ createdAt: -1 });
     res.json(campaigns);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching campaigns from DB:', error);
+    // Fall back to memory
+    const populated = inMemoryCampaigns.map(populateCampaign);
+    res.json(populated);
   }
 });
 
 // POST a new campaign
 router.post('/', async (req, res) => {
   const { name, companyId, templateId } = req.body;
+
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Creating campaign in memory.');
+    const campaign = {
+      _id: 'mock-campaign-' + Date.now(),
+      name,
+      companyId,
+      templateId,
+      status: 'Draft',
+      totalCount: 0,
+      sentCount: 0,
+      failedCount: 0,
+      createdAt: new Date().toISOString()
+    };
+    inMemoryCampaigns.push(campaign);
+    return res.status(201).json(campaign);
+  }
+
   try {
     const campaign = new Campaign({
       name,
@@ -37,6 +82,16 @@ router.post('/', async (req, res) => {
 
 // GET campaign by ID
 router.get('/:id', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Finding campaign in memory by ID.');
+    const campaign = inMemoryCampaigns.find(c => c._id === req.params.id);
+    if (campaign) {
+      return res.json(populateCampaign(campaign));
+    } else {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+  }
+
   try {
     const campaign = await Campaign.findById(req.params.id)
       .populate('companyId')
@@ -53,6 +108,18 @@ router.get('/:id', async (req, res) => {
 
 // DELETE a campaign
 router.delete('/:id', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Deleting campaign and data from memory.');
+    const index = inMemoryCampaigns.findIndex(c => c._id === req.params.id);
+    if (index !== -1) {
+      inMemoryCampaigns.splice(index, 1);
+      inMemoryCandidates = inMemoryCandidates.filter(c => c.campaignId !== req.params.id);
+      return res.json({ message: 'Campaign and associated data removed' });
+    } else {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+  }
+
   try {
     const campaign = await Campaign.findById(req.params.id);
     if (campaign) {
@@ -71,6 +138,12 @@ router.delete('/:id', async (req, res) => {
 
 // GET candidates of a campaign
 router.get('/:id/candidates', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Getting candidates from memory.');
+    const filtered = inMemoryCandidates.filter(c => c.campaignId === req.params.id);
+    return res.json(filtered);
+  }
+
   try {
     const candidates = await Candidate.find({ campaignId: req.params.id });
     res.json(candidates);
@@ -83,6 +156,62 @@ router.get('/:id/candidates', async (req, res) => {
 router.post('/:id/candidates', async (req, res) => {
   const campaignId = req.params.id;
   const candidatesData = req.body; // Expects array of candidate objects
+
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Uploading candidates to memory.');
+    const campaign = inMemoryCampaigns.find(c => c._id === campaignId);
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+
+    // Clear existing candidates
+    inMemoryCandidates = inMemoryCandidates.filter(c => c.campaignId !== campaignId);
+
+    // Map and insert
+    const mapped = candidatesData.map(c => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailVal = c.email || '';
+      const isValidEmail = emailRegex.test(emailVal.trim());
+      const status = isValidEmail ? 'Validated' : 'Invalid Email';
+
+      const name = c.name || '';
+      const email = emailVal;
+      const role = c.Role || c.role || '';
+      const department = c.Organization || c.department || '';
+      const salary = ''; 
+      const joiningDate = c['Start Date'] || c.joiningDate || '';
+
+      const customFields = {};
+      Object.keys(c).forEach(key => {
+        const lowerKey = key.toLowerCase();
+        if (!['name', 'email', 'role', 'department', 'salary', 'joining date', 'joiningdate', 'start date'].includes(lowerKey)) {
+          customFields[key] = c[key] ? c[key].toString() : '';
+        }
+      });
+
+      return {
+        _id: 'mock-cand-' + Math.random().toString(36).substr(2, 9),
+        campaignId,
+        name,
+        email,
+        role,
+        department,
+        salary,
+        joiningDate,
+        status,
+        customFields
+      };
+    });
+
+    inMemoryCandidates.push(...mapped);
+
+    // Update campaign metrics
+    campaign.totalCount = mapped.length;
+    campaign.sentCount = 0;
+    campaign.failedCount = 0;
+
+    return res.status(201).json(mapped);
+  }
 
   try {
     const campaign = await Campaign.findById(campaignId);
@@ -149,6 +278,37 @@ router.post('/:id/candidates', async (req, res) => {
 // POST create a single candidate (Add Row)
 router.post('/candidates', async (req, res) => {
   const { campaignId, name, email, role, department, salary, joiningDate, customFields } = req.body;
+
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Creating candidate in memory.');
+    const campaign = inMemoryCampaigns.find(c => c._id === campaignId);
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValidEmail = emailRegex.test(email);
+    const status = isValidEmail ? 'Validated' : 'Invalid Email';
+
+    const candidate = {
+      _id: 'mock-cand-' + Math.random().toString(36).substr(2, 9),
+      campaignId,
+      name,
+      email,
+      role,
+      department,
+      salary,
+      joiningDate,
+      status,
+      customFields: customFields || {}
+    };
+
+    inMemoryCandidates.push(candidate);
+    campaign.totalCount += 1;
+
+    return res.status(201).json(candidate);
+  }
+
   try {
     const campaign = await Campaign.findById(campaignId);
     if (!campaign) {
@@ -185,6 +345,29 @@ router.post('/candidates', async (req, res) => {
 
 // PUT update inline candidate details
 router.put('/candidates/:id', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Updating candidate details in memory.');
+    const candidate = inMemoryCandidates.find(c => c._id === req.params.id);
+    if (candidate) {
+      candidate.name = req.body.name || candidate.name;
+      candidate.email = req.body.email || candidate.email;
+      candidate.role = req.body.role !== undefined ? req.body.role : candidate.role;
+      candidate.department = req.body.department !== undefined ? req.body.department : candidate.department;
+      candidate.salary = req.body.salary !== undefined ? req.body.salary : candidate.salary;
+      candidate.joiningDate = req.body.joiningDate !== undefined ? req.body.joiningDate : candidate.joiningDate;
+      candidate.customFields = req.body.customFields !== undefined ? req.body.customFields : candidate.customFields;
+
+      // Re-validate email on change
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValidEmail = emailRegex.test(candidate.email);
+      candidate.status = isValidEmail ? 'Validated' : 'Invalid Email';
+
+      return res.json(candidate);
+    } else {
+      return res.status(404).json({ message: 'Candidate not found' });
+    }
+  }
+
   try {
     const candidate = await Candidate.findById(req.params.id);
     if (candidate) {
@@ -213,6 +396,24 @@ router.put('/candidates/:id', async (req, res) => {
 
 // DELETE a candidate
 router.delete('/candidates/:id', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Deleting candidate from memory.');
+    const index = inMemoryCandidates.findIndex(c => c._id === req.params.id);
+    if (index !== -1) {
+      const candidate = inMemoryCandidates[index];
+      const campaign = inMemoryCampaigns.find(c => c._id === candidate.campaignId);
+      inMemoryCandidates.splice(index, 1);
+
+      if (campaign) {
+        campaign.totalCount = Math.max(0, campaign.totalCount - 1);
+      }
+
+      return res.json({ message: 'Candidate removed' });
+    } else {
+      return res.status(404).json({ message: 'Candidate not found' });
+    }
+  }
+
   try {
     const candidate = await Candidate.findById(req.params.id);
     if (candidate) {
@@ -233,4 +434,5 @@ router.delete('/candidates/:id', async (req, res) => {
   }
 });
 
+export { inMemoryCampaigns, inMemoryCandidates };
 export default router;

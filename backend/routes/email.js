@@ -1,10 +1,14 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 import Campaign from '../models/Campaign.js';
 import Candidate from '../models/Candidate.js';
 import Company from '../models/Company.js';
 import Template from '../models/Template.js';
 import History from '../models/History.js';
+import { inMemoryCompanies } from './companies.js';
+import { inMemoryTemplates } from './templates.js';
+import { inMemoryCampaigns, inMemoryCandidates } from './campaigns.js';
 
 const router = express.Router();
 
@@ -20,7 +24,6 @@ const compileTemplate = (text, variables) => {
   result = result.replace(/{{\s*(.*?)\s*}}/g, '$1');
   return result;
 };
-
 
 // Helper to create Nodemailer transporter
 const createTransporter = (smtp) => {
@@ -86,6 +89,139 @@ router.post('/test-smtp', async (req, res) => {
 // POST send campaign (Asynchronous sending loop)
 router.post('/send-campaign', async (req, res) => {
   const { campaignId, candidateIds, delayMs, retryOnFailure } = req.body;
+
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Dispatching campaign in-memory.');
+    const campaign = inMemoryCampaigns.find(c => c._id === campaignId);
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+
+    const targetCompanyId = typeof campaign.companyId === 'object' ? campaign.companyId._id : campaign.companyId;
+    const targetTemplateId = typeof campaign.templateId === 'object' ? campaign.templateId._id : campaign.templateId;
+
+    const company = inMemoryCompanies.find(c => c._id === targetCompanyId);
+    const template = inMemoryTemplates.find(t => t._id === targetTemplateId);
+
+    if (!company) {
+      return res.status(404).json({ message: 'Company profile not found for this campaign' });
+    }
+
+    const targetCandidates = inMemoryCandidates.filter(c => 
+      candidateIds.includes(c._id) && c.campaignId === campaignId
+    );
+
+    if (targetCandidates.length === 0) {
+      return res.status(400).json({ message: 'No candidates selected or found' });
+    }
+
+    // Verify SMTP if configured, otherwise default to simulation
+    let transporter = null;
+    if (company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass) {
+      const verifyResult = await verifySmtp(company.smtp);
+      if (!verifyResult.ok) {
+        return res.status(400).json({ message: `SMTP verification failed: ${verifyResult.reason}` });
+      }
+      transporter = verifyResult.transporter;
+    }
+
+    // Set campaign status to Sending
+    campaign.status = 'Sending';
+    campaign.sentCount = 0;
+    campaign.failedCount = 0;
+
+    // Reset status of selected candidates to Pending before starting
+    targetCandidates.forEach(c => {
+      c.status = 'Pending';
+      c.error = '';
+    });
+
+    // Respond immediately to the frontend, processing runs in the background
+    res.json({ message: 'Offer letter dispatch started in background', total: targetCandidates.length });
+
+    // Asynchronous background execution
+    (async () => {
+      const delay = Number(delayMs) || 1500;
+
+      for (let i = 0; i < targetCandidates.length; i++) {
+        const candidate = targetCandidates[i];
+        
+        candidate.status = 'Sending';
+
+        // Prepare email content
+        const templateVariables = {
+          Name: candidate.name,
+          Role: candidate.role,
+          Department: candidate.department,
+          Salary: candidate.salary,
+          StartDate: candidate.joiningDate,
+          JoiningDate: candidate.joiningDate,
+          Company: company.name,
+          Manager: template && template.body.includes('{{Manager}}') ? 'HR Team' : '',
+          ...candidate.customFields
+        };
+
+        const mailSubject = compileTemplate(template ? template.subject : 'Offer of Employment', templateVariables);
+        const mailBody = compileTemplate(template ? template.body : 'Dear {{Name}}, Congratulations!', templateVariables);
+
+        let sentSuccess = false;
+        let errorMessage = '';
+        const maxRetries = retryOnFailure ? 3 : 1;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          if (attempt > 1) {
+            candidate.status = 'Retrying';
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+
+          try {
+            if (transporter) {
+              await transporter.sendMail({
+                from: `"${company.name}" <${company.smtp.user}>`,
+                to: candidate.email,
+                subject: mailSubject,
+                text: mailBody,
+                html: mailBody.replace(/\n/g, '<br/>')
+              });
+            } else {
+              // MOCK SIMULATION MODE (if SMTP config is not fully set)
+              await new Promise(resolve => setTimeout(resolve, 800)); // Simulate work
+              
+              if (candidate.email.includes('fail') || (i === 1 && Math.random() > 0.8)) {
+                throw new Error('Simulated SMTP connection timeout');
+              }
+            }
+            sentSuccess = true;
+            break; // Break out of retry loop on success
+          } catch (err) {
+            errorMessage = err.message;
+            console.error(`Attempt ${attempt} failed for ${candidate.email}: ${errorMessage}`);
+          }
+        }
+
+        if (sentSuccess) {
+          candidate.status = 'Sent';
+          candidate.error = '';
+          campaign.sentCount += 1;
+        } else {
+          candidate.status = 'Failed';
+          candidate.error = errorMessage;
+          campaign.failedCount += 1;
+        }
+
+        // Wait between emails (unless it is the last candidate)
+        if (i < targetCandidates.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+
+      // Mark campaign completed
+      campaign.status = 'Completed';
+      console.log(`Campaign ${campaign.name} dispatch completed!`);
+    })();
+
+    return;
+  }
 
   try {
     const campaign = await Campaign.findById(campaignId);

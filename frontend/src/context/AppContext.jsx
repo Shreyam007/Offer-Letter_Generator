@@ -63,17 +63,23 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${API_BASE}/companies`);
       const data = await res.json();
-      setCompanies(data);
-      // Sync selectedCompany if it exists
-      if (selectedCompany) {
-        const found = data.find(c => c._id === selectedCompany._id);
-        if (found) setSelectedCompany(found);
-      } else if (data.length > 0) {
-        const quillon = data.find(c => c.name.toLowerCase().includes('quillon'));
-        setSelectedCompany(quillon || data[0]);
+      if (Array.isArray(data)) {
+        setCompanies(data);
+        // Sync selectedCompany if it exists
+        if (selectedCompany) {
+          const found = data.find(c => c._id === selectedCompany._id);
+          if (found) setSelectedCompany(found);
+        } else if (data.length > 0) {
+          const quillon = data.find(c => c.name.toLowerCase().includes('quillon'));
+          setSelectedCompany(quillon || data[0]);
+        }
+      } else {
+        console.error('Error: loaded companies is not an array:', data);
+        setCompanies([]);
       }
     } catch (err) {
       console.error('Error fetching companies:', err);
+      setCompanies([]);
     }
   };
 
@@ -122,9 +128,15 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${API_BASE}/templates`);
       const data = await res.json();
-      setTemplates(data);
+      if (Array.isArray(data)) {
+        setTemplates(data);
+      } else {
+        console.error('Error: loaded templates is not an array:', data);
+        setTemplates([]);
+      }
     } catch (err) {
       console.error('Error fetching templates:', err);
+      setTemplates([]);
     }
   };
 
@@ -155,9 +167,15 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${API_BASE}/campaigns`);
       const data = await res.json();
-      setCampaigns(data);
+      if (Array.isArray(data)) {
+        setCampaigns(data);
+      } else {
+        console.error('Error: loaded campaigns is not an array:', data);
+        setCampaigns([]);
+      }
     } catch (err) {
       console.error('Error fetching campaigns:', err);
+      setCampaigns([]);
     }
   };
 
@@ -204,12 +222,20 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${API_BASE}/campaigns/${campaignId}/candidates`);
       const data = await res.json();
-      setCandidates(data);
-      // Auto select validated candidates by default
-      const validated = data.filter(c => c.status === 'Validated').map(c => c._id);
-      setSelectedCandidateIds(validated);
+      if (Array.isArray(data)) {
+        setCandidates(data);
+        // Auto select validated candidates by default
+        const validated = data.filter(c => c.status === 'Validated').map(c => c._id);
+        setSelectedCandidateIds(validated);
+      } else {
+        console.error('Error: loaded candidates is not an array:', data);
+        setCandidates([]);
+        setSelectedCandidateIds([]);
+      }
     } catch (err) {
       console.error('Error loading candidates:', err);
+      setCandidates([]);
+      setSelectedCandidateIds([]);
     }
   };
 
