@@ -2,7 +2,10 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const AppContext = createContext();
 
-export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
+export const API_BASE = import.meta.env.VITE_API_BASE || 
+  (typeof window !== 'undefined' && window.location.hostname && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')
+    ? 'https://offer-letter-generator-whu4.onrender.com/api'
+    : 'http://localhost:5000/api');
 console.log('OfferFlow HR Frontend initialized. API_BASE is:', API_BASE);
 
 
