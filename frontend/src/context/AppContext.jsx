@@ -342,6 +342,10 @@ export const AppProvider = ({ children }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaignId, candidateIds, delayMs, retryOnFailure })
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Server returned ${res.status}`);
+      }
       const data = await res.json();
       await loadCampaigns();
       return data;

@@ -9,8 +9,17 @@ import { inMemoryTemplates } from './templates.js';
 const router = express.Router();
 
 // Local in-memory store for campaigns and candidates
-let inMemoryCampaigns = [];
-let inMemoryCandidates = [];
+const inMemoryCampaigns = [];
+const inMemoryCandidates = [];
+
+// Helper to filter in-memory candidates in-place to preserve references
+const filterInMemoryCandidates = (predicate) => {
+  for (let i = inMemoryCandidates.length - 1; i >= 0; i--) {
+    if (!predicate(inMemoryCandidates[i])) {
+      inMemoryCandidates.splice(i, 1);
+    }
+  }
+};
 
 // Helper to populate in-memory campaign
 const populateCampaign = (camp) => {
@@ -113,7 +122,7 @@ router.delete('/:id', async (req, res) => {
     const index = inMemoryCampaigns.findIndex(c => c._id === req.params.id);
     if (index !== -1) {
       inMemoryCampaigns.splice(index, 1);
-      inMemoryCandidates = inMemoryCandidates.filter(c => c.campaignId !== req.params.id);
+      filterInMemoryCandidates(c => c.campaignId !== req.params.id);
       return res.json({ message: 'Campaign and associated data removed' });
     } else {
       return res.status(404).json({ message: 'Campaign not found' });
@@ -166,7 +175,7 @@ router.post('/:id/candidates', async (req, res) => {
       }
 
       // Clear existing candidates
-      inMemoryCandidates = inMemoryCandidates.filter(c => c.campaignId !== campaignId);
+      filterInMemoryCandidates(c => c.campaignId !== campaignId);
 
       // Map and insert
       const mapped = candidatesData.map(c => {
