@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 
+let lastConnectionError = null;
+
 const connectDB = async () => {
   try {
     mongoose.set('bufferCommands', false);
@@ -8,10 +10,13 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    lastConnectionError = null;
   } catch (error) {
     console.error(`MongoDB Connection Error: ${error.message}`);
-    // Do not crash the server, just log so fallback can kick in
+    lastConnectionError = error.message;
   }
 };
 
-export default connectDB;
+const getConnectionError = () => lastConnectionError;
+
+export { connectDB as default, getConnectionError };

@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connectDB from './config/db.js';
+import connectDB, { getConnectionError } from './config/db.js';
 import seedDatabase from './config/seed.js';
 import mongoose from 'mongoose';
 import { inMemoryCampaigns, inMemoryCandidates } from './routes/campaigns.js';
@@ -49,6 +49,7 @@ app.get('/api/debug-state', (req, res) => {
   res.json({
     mongooseReadyState: mongoose.connection.readyState,
     mongooseHost: mongoose.connection.host,
+    mongooseError: getConnectionError(),
     inMemoryCampaignsCount: inMemoryCampaigns.length,
     inMemoryCandidatesCount: inMemoryCandidates.length,
     hasMongoUri: !!process.env.MONGO_URI,
