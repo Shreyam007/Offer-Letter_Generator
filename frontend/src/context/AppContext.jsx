@@ -233,9 +233,14 @@ export const AppProvider = ({ children }) => {
       const data = await res.json();
       if (Array.isArray(data)) {
         setCandidates(data);
-        // Auto select validated candidates by default
-        const validated = data.filter(c => c.status === 'Validated').map(c => c._id);
-        setSelectedCandidateIds(validated);
+        // Preserve existing selection if already present, otherwise auto-select validated
+        setSelectedCandidateIds(prev => {
+          if (prev && prev.length > 0) {
+            const freshIds = data.map(c => c._id);
+            return prev.filter(id => freshIds.includes(id));
+          }
+          return data.filter(c => c.status === 'Validated').map(c => c._id);
+        });
       } else {
         console.error('Error: loaded candidates is not an array:', data);
         setCandidates([]);

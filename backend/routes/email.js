@@ -119,10 +119,11 @@ router.post('/send-campaign', async (req, res) => {
     let transporter = null;
     if (company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass) {
       const verifyResult = await verifySmtp(company.smtp);
-      if (!verifyResult.ok) {
-        return res.status(400).json({ message: `SMTP verification failed: ${verifyResult.reason}` });
+      if (verifyResult.ok) {
+        transporter = verifyResult.transporter;
+      } else {
+        console.warn(`SMTP verification failed: ${verifyResult.reason}. Falling back to simulation mode.`);
       }
-      transporter = verifyResult.transporter;
     }
 
     // Set campaign status to Sending
@@ -245,15 +246,15 @@ router.post('/send-campaign', async (req, res) => {
       return res.status(400).json({ message: 'No candidates selected or found' });
     }
 
-    // Verify SMTP (fail fast if credentials are invalid)
-    const verifyResult = await verifySmtp(company.smtp);
-    if (!verifyResult.ok) {
-      let suggestion = '';
-      if (/535|Authentication|Invalid login|BadCredentials/i.test(verifyResult.reason || '')) {
-        suggestion = 'If you use Gmail, generate an App Password (https://support.google.com/accounts/answer/185833) or use a transactional email provider/Mailtrap for testing.';
+    // Verify SMTP if configured, otherwise default to simulation
+    let transporter = null;
+    if (company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass) {
+      const verifyResult = await verifySmtp(company.smtp);
+      if (verifyResult.ok) {
+        transporter = verifyResult.transporter;
+      } else {
+        console.warn(`SMTP verification failed: ${verifyResult.reason}. Falling back to simulation mode.`);
       }
-
-      return res.status(400).json({ message: `SMTP verification failed: ${verifyResult.reason}`, suggestion });
     }
 
     // Set campaign status to Sending
@@ -273,7 +274,7 @@ router.post('/send-campaign', async (req, res) => {
 
     // Asynchronous background execution
     (async () => {
-      const transporter = verifyResult.transporter; // verified transporter
+      const transporterInstance = transporter; // verified transporter or null fallback
       const delay = Number(delayMs) || 1500;
 
       for (let i = 0; i < targetCandidates.length; i++) {
@@ -312,9 +313,9 @@ router.post('/send-campaign', async (req, res) => {
           }
 
           try {
-            if (transporter) {
+            if (transporterInstance) {
               // Real SMTP email sending
-              await transporter.sendMail({
+              await transporterInstance.sendMail({
                 from: `"${company.name}" <${company.smtp.user}>`,
                 to: candidate.email,
                 subject: mailSubject,

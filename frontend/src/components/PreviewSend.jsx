@@ -43,6 +43,12 @@ const PreviewSend = () => {
   // Store candidate statuses to track transitions and alert on updates
   const prevStatusesRef = useRef({});
 
+  // Keep selectedCandidateIds in a ref to avoid stale closure issues in setInterval
+  const selectedCandidateIdsRef = useRef(selectedCandidateIds);
+  useEffect(() => {
+    selectedCandidateIdsRef.current = selectedCandidateIds;
+  }, [selectedCandidateIds]);
+
   // Initialize/reset previous statuses whenever sending starts/stops or candidates change
   useEffect(() => {
     const initialStatuses = {};
@@ -61,7 +67,7 @@ const PreviewSend = () => {
         
         // Check if sending completed
         const freshCandidates = await fetch(`${API_BASE}/campaigns/${currentCampaign._id}/candidates`).then(r => r.json());
-        const targetCandidates = freshCandidates.filter(c => selectedCandidateIds.includes(c._id));
+        const targetCandidates = freshCandidates.filter(c => selectedCandidateIdsRef.current.includes(c._id));
         
         // Alert on status transitions
         targetCandidates.forEach(cand => {
