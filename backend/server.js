@@ -44,11 +44,15 @@ app.get('/', (req, res) => {
 
 // Diagnostics endpoint
 app.get('/api/debug-state', (req, res) => {
+  const rawUri = process.env.MONGO_URI || '';
+  const maskedUri = rawUri.replace(/:([^@]+)@/, ':****@');
   res.json({
     mongooseReadyState: mongoose.connection.readyState,
     mongooseHost: mongoose.connection.host,
     inMemoryCampaignsCount: inMemoryCampaigns.length,
     inMemoryCandidatesCount: inMemoryCandidates.length,
+    hasMongoUri: !!process.env.MONGO_URI,
+    mongoUri: maskedUri || 'NOT_SET'
   });
 });
 
