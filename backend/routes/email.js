@@ -67,8 +67,8 @@ const createTransporter = (smtp) => {
     tls: {
       rejectUnauthorized: false
     },
-    connectionTimeout: 3000,
-    greetingTimeout: 3000
+    connectionTimeout: 5000,
+    greetingTimeout: 5000
   });
 };
 

@@ -32,7 +32,7 @@ const HistoryTab = () => {
     try {
       const res = await fetch(`${API_BASE}/campaigns/${campaign._id}/candidates`);
       const data = await res.json();
-      setCampaignCandidates(data);
+      setCampaignCandidates(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
     } finally {
