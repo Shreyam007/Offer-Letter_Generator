@@ -115,6 +115,37 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// PUT update campaign (e.g. link a templateId after editing)
+router.put('/:id', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Database offline: Updating campaign in memory.');
+    const campaign = inMemoryCampaigns.find(c => c._id === req.params.id);
+    if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
+
+    if (req.body.name !== undefined) campaign.name = req.body.name;
+    if (req.body.companyId !== undefined) campaign.companyId = req.body.companyId;
+    if (req.body.templateId !== undefined) campaign.templateId = req.body.templateId;
+    if (req.body.status !== undefined) campaign.status = req.body.status;
+
+    return res.json(populateCampaign(campaign));
+  }
+
+  try {
+    const campaign = await Campaign.findById(req.params.id);
+    if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
+
+    if (req.body.name !== undefined) campaign.name = req.body.name;
+    if (req.body.companyId !== undefined) campaign.companyId = req.body.companyId;
+    if (req.body.templateId !== undefined) campaign.templateId = req.body.templateId;
+    if (req.body.status !== undefined) campaign.status = req.body.status;
+
+    const updated = await campaign.save();
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // DELETE a campaign
 router.delete('/:id', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {

@@ -160,14 +160,35 @@ router.post('/send-campaign', async (req, res) => {
   if (isOffline) {
     campaign = inMemoryCampaigns.find(c => c._id === campaignId);
     if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
-    company = inMemoryCompanies.find(c => c._id === (typeof campaign.companyId === 'object' ? campaign.companyId._id : campaign.companyId));
-    template = inMemoryTemplates.find(t => t._id === (typeof campaign.templateId === 'object' ? campaign.templateId._id : campaign.templateId));
+    const companyIdStr = typeof campaign.companyId === 'object' ? campaign.companyId._id : campaign.companyId;
+    company = inMemoryCompanies.find(c => c._id === companyIdStr);
+    // Look up template by campaign.templateId first, then fallback to matching by companyId
+    const templateIdStr = typeof campaign.templateId === 'object' ? campaign.templateId._id : campaign.templateId;
+    template = inMemoryTemplates.find(t => t._id === templateIdStr);
+    if (!template) {
+      // Fallback: find template by companyId (matches preview behavior)
+      template = inMemoryTemplates.find(t => {
+        const tCompId = typeof t.companyId === 'object' ? t.companyId._id : t.companyId;
+        return tCompId === companyIdStr;
+      }) || inMemoryTemplates[0];
+      console.log(`Template fallback: using template "${template?.name}" matched by companyId`);
+    }
     targetCandidates = inMemoryCandidates.filter(c => candidateIds.includes(c._id) && c.campaignId === campaignId);
   } else {
     campaign = await Campaign.findById(campaignId);
     if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
     company = await Company.findById(campaign.companyId);
-    template = await Template.findById(campaign.templateId);
+    // Look up template by campaign.templateId first, then fallback to matching by companyId
+    template = campaign.templateId ? await Template.findById(campaign.templateId) : null;
+    if (!template && company) {
+      // Fallback: find template by companyId (matches preview behavior)
+      template = await Template.findOne({ companyId: company._id });
+      if (!template) {
+        // Last resort: use any available template
+        template = await Template.findOne({});
+      }
+      console.log(`Template fallback: using template "${template?.name}" matched by companyId`);
+    }
     targetCandidates = await Candidate.find({ _id: { $in: candidateIds }, campaignId: campaignId });
   }
 
