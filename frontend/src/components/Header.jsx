@@ -15,7 +15,13 @@ const Header = ({ activeTab, setActiveTab }) => {
   return (
     <header className="header">
       <div className="header-left">
-        <h1 className="header-title-main">OfferFlow HR</h1>
+        <h1 
+          className="header-title-main" 
+          style={{ cursor: 'pointer' }}
+          onClick={() => handleTabClick('workflow')}
+        >
+          OfferFlow HR
+        </h1>
         
         <div className="header-tabs">
           <div 

@@ -354,7 +354,11 @@ const HistoryTab = () => {
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <div className="font-semibold text-sm truncate">{cand.name}</div>
                           <div className="text-xs text-slate-400 truncate">{cand.email}</div>
-                          {cand.error && <div className="text-xs text-red-500 mt-1">{cand.error}</div>}
+                          {cand.error && (
+                            <div className="text-xs text-red-600 mt-1.5 bg-red-50 p-2 rounded border border-red-100 font-medium">
+                              <strong>Error:</strong> {cand.error}
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-3">
