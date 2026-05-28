@@ -25,13 +25,33 @@ const compileTemplate = (text, variables) => {
   return result;
 };
 
-// Helper to create Nodemailer transporter
-const createTransporter = (smtp) => {
+const getSmtpConfig = (smtp) => {
   const host = smtp?.host || process.env.SMTP_HOST;
-  const port = Number(smtp?.port) || Number(process.env.SMTP_PORT) || 587;
-  const secure = smtp?.secure !== undefined ? smtp.secure : (process.env.SMTP_SECURE === 'true');
+  const port = Number(smtp?.port ?? process.env.SMTP_PORT ?? 587);
+  const secure = smtp?.secure !== undefined
+    ? smtp.secure
+    : (process.env.SMTP_SECURE === 'true') || port === 465;
   const user = smtp?.user || process.env.SMTP_USER;
   const pass = smtp?.pass || process.env.SMTP_PASS;
+  const from = smtp?.from || process.env.SMTP_FROM;
+  return { host, port, secure, user, pass, from };
+};
+
+const validateSmtpConfig = ({ host, port, secure, user, pass }) => {
+  if (!host || !user || !pass) {
+    return 'Missing SMTP configuration. Enter host, port, user and password, or configure server environment variables.';
+  }
+
+  if (port === 465 && secure === false) {
+    return 'Port 465 requires secure SSL/TLS to be enabled. Turn on Secure SSL/TLS or use port 587.';
+  }
+
+  return null;
+};
+
+// Helper to create Nodemailer transporter
+const createTransporter = (smtp) => {
+  const { host, port, secure, user, pass } = getSmtpConfig(smtp);
 
   if (!host || !user || !pass) {
     return null; // Signals mock mode
@@ -54,12 +74,10 @@ const createTransporter = (smtp) => {
 
 // Helper to verify SMTP credentials and return a transporter if valid.
 const verifySmtp = async (smtp) => {
-  const host = smtp?.host || process.env.SMTP_HOST;
-  const user = smtp?.user || process.env.SMTP_USER;
-  const pass = smtp?.pass || process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    return { ok: false, reason: 'Missing SMTP configuration' };
+  const config = getSmtpConfig(smtp);
+  const validationError = validateSmtpConfig(config);
+  if (validationError) {
+    return { ok: false, reason: validationError };
   }
 
   const transporter = createTransporter(smtp);
@@ -67,7 +85,6 @@ const verifySmtp = async (smtp) => {
     await transporter.verify();
     return { ok: true, transporter };
   } catch (err) {
-    // Normalize error message for frontend display
     const message = err && err.message ? err.message : String(err);
     return { ok: false, reason: message, code: err && err.code };
   }
@@ -76,12 +93,10 @@ const verifySmtp = async (smtp) => {
 // POST test SMTP connection
 router.post('/test-smtp', async (req, res) => {
   const { smtp } = req.body;
-  const host = smtp?.host || process.env.SMTP_HOST;
-  const user = smtp?.user || process.env.SMTP_USER;
-  const pass = smtp?.pass || process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    return res.status(400).json({ message: 'SMTP credentials missing. Enter host, port, user and password, or configure server environment variables.' });
+  const config = getSmtpConfig(smtp);
+  const validationError = validateSmtpConfig(config);
+  if (validationError) {
+    return res.status(400).json({ success: false, message: validationError });
   }
 
   try {
@@ -90,15 +105,14 @@ router.post('/test-smtp', async (req, res) => {
       return res.json({ success: true, message: 'SMTP connection verified successfully!' });
     }
 
-    // Provide actionable suggestions for common authentication errors
     let suggestion = '';
     if (result.reason && /535|Authentication|Invalid login|BadCredentials/i.test(result.reason)) {
       suggestion = 'If you are using Gmail, create an App Password and use it here (https://support.google.com/accounts/answer/185833). Alternatively, use a transactional email provider (SendGrid/Mailgun) or Mailtrap for testing.';
     }
 
-    res.status(500).json({ message: `SMTP connection failed: ${result.reason}`, suggestion });
+    res.status(500).json({ success: false, message: `SMTP connection failed: ${result.reason}`, suggestion });
   } catch (error) {
-    res.status(500).json({ message: `SMTP connection failed: ${error.message}` });
+    res.status(500).json({ success: false, message: `SMTP connection failed: ${error.message}` });
   }
 });
 
@@ -131,18 +145,17 @@ router.post('/send-campaign', async (req, res) => {
       return res.status(400).json({ message: 'No candidates selected or found' });
     }
 
-    // Verify SMTP if configured locally or globally, otherwise default to simulation
-    let transporter = null;
+    // Require valid SMTP configuration for real sending.
     const hasCompanySmtp = company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass;
     const hasGlobalSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-    if (hasCompanySmtp || hasGlobalSmtp) {
-      const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
-      if (verifyResult.ok) {
-        transporter = verifyResult.transporter;
-      } else {
-        console.warn(`SMTP verification failed: ${verifyResult.reason}. Falling back to simulation mode.`);
-      }
+    if (!hasCompanySmtp && !hasGlobalSmtp) {
+      return res.status(500).json({ message: 'SMTP configuration missing. Configure SMTP in the selected company profile or set SMTP environment variables on the server.' });
     }
+    const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
+    if (!verifyResult.ok) {
+      return res.status(500).json({ message: `SMTP configuration invalid: ${verifyResult.reason}` });
+    }
+    const transporter = verifyResult.transporter;
 
     // Set campaign status to Sending
     campaign.status = 'Sending';
@@ -194,24 +207,18 @@ router.post('/send-campaign', async (req, res) => {
           }
 
           try {
-            if (transporter) {
-              const senderEmail = (company.smtp && company.smtp.user) || process.env.SMTP_FROM || process.env.SMTP_USER;
-              const finalSender = senderEmail === 'resend' ? 'onboarding@resend.dev' : senderEmail;
+              const senderEmailCandidates = [company.smtp?.from, process.env.SMTP_FROM, company.email, process.env.SMTP_USER];
+              const senderEmail = senderEmailCandidates.find(email => typeof email === 'string' && email.includes('@'));
+              if (!senderEmail) {
+                throw new Error('No valid sender email found. Set SMTP_FROM or company careers email before sending.');
+              }
               await transporter.sendMail({
-                from: `"${company.name}" <${finalSender}>`,
+                from: `"${company.name}" <${senderEmail}>`,
                 to: candidate.email,
                 subject: mailSubject,
                 text: mailBody,
                 html: mailBody.replace(/\n/g, '<br/>')
               });
-            } else {
-              // MOCK SIMULATION MODE (if SMTP config is not fully set)
-              await new Promise(resolve => setTimeout(resolve, 800)); // Simulate work
-              
-              if (candidate.email.includes('fail') || (i === 1 && Math.random() > 0.8)) {
-                throw new Error('Simulated SMTP connection timeout');
-              }
-            }
             sentSuccess = true;
             break; // Break out of retry loop on success
           } catch (err) {
@@ -266,18 +273,17 @@ router.post('/send-campaign', async (req, res) => {
       return res.status(400).json({ message: 'No candidates selected or found' });
     }
 
-    // Verify SMTP if configured locally or globally, otherwise default to simulation
-    let transporter = null;
+    // Require valid SMTP configuration for real sending.
     const hasCompanySmtp = company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass;
     const hasGlobalSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-    if (hasCompanySmtp || hasGlobalSmtp) {
-      const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
-      if (verifyResult.ok) {
-        transporter = verifyResult.transporter;
-      } else {
-        console.warn(`SMTP verification failed: ${verifyResult.reason}. Falling back to simulation mode.`);
-      }
+    if (!hasCompanySmtp && !hasGlobalSmtp) {
+      return res.status(500).json({ message: 'SMTP configuration missing. Configure SMTP in the selected company profile or set SMTP environment variables on the server.' });
     }
+    const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
+    if (!verifyResult.ok) {
+      return res.status(500).json({ message: `SMTP configuration invalid: ${verifyResult.reason}` });
+    }
+    const transporter = verifyResult.transporter;
 
     // Set campaign status to Sending
     campaign.status = 'Sending';
@@ -335,26 +341,18 @@ router.post('/send-campaign', async (req, res) => {
           }
 
           try {
-            if (transporterInstance) {
-              // Real SMTP email sending
-              const senderEmail = (company.smtp && company.smtp.user) || process.env.SMTP_FROM || process.env.SMTP_USER;
-              const finalSender = senderEmail === 'resend' ? 'onboarding@resend.dev' : senderEmail;
+              const senderEmailCandidates = [company.smtp?.from, process.env.SMTP_FROM, company.email, process.env.SMTP_USER];
+              const senderEmail = senderEmailCandidates.find(email => typeof email === 'string' && email.includes('@'));
+              if (!senderEmail) {
+                throw new Error('No valid sender email found. Set SMTP_FROM or company careers email before sending.');
+              }
               await transporterInstance.sendMail({
-                from: `"${company.name}" <${finalSender}>`,
+                from: `"${company.name}" <${senderEmail}>`,
                 to: candidate.email,
                 subject: mailSubject,
                 text: mailBody,
                 html: mailBody.replace(/\n/g, '<br/>') // Basic text to HTML formatting
               });
-            } else {
-              // MOCK SIMULATION MODE (if SMTP config is not fully set)
-              await new Promise(resolve => setTimeout(resolve, 800)); // Simulate work
-              
-              // For simulation: inject a small chance of failure to test failed/retry UI
-              if (candidate.email.includes('fail') || (i === 1 && Math.random() > 0.5)) {
-                throw new Error('Simulated SMTP connection timeout');
-              }
-            }
             sentSuccess = true;
             break; // Break out of retry loop on success
           } catch (err) {

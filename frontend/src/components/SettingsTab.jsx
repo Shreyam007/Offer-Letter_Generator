@@ -447,6 +447,8 @@ const SettingsTab = () => {
 
               <div className="text-xs text-slate-500 mt-2 mb-4 bg-slate-50 p-2.5 rounded border border-slate-200" style={{ lineHeight: '1.5' }}>
                 💡 <strong>Need credentials for testing?</strong> Visit <a href="https://ethereal.email" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">ethereal.email</a> and click <strong>"Create Ethereal Account"</strong> to generate a temporary test mailbox, then paste its Username and Password here. For real dispatches, use your company's SMTP or Gmail with an <strong>App Password</strong>.
+                <br />
+                💡 <strong>Important:</strong> The sender address must be a real email. If your SMTP provider uses a separate login key or username (for example, Resend or Gmail App Passwords), make sure the backend has a valid <code>SMTP_FROM</code> or company email address configured.
               </div>
 
               <div className="toggle-group mt-2">
