@@ -327,19 +327,21 @@ h1, h2, h3, h4, h5, h6 {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 /* Wizard Steps Indicator */
 .wizard-steps {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   margin-bottom: 28px;
   width: 100%;
-  max-width: 800px;
+  max-width: 920px;
   margin-left: auto;
   margin-right: auto;
-  padding: 10px 0;
+  padding: 16px 0;
+  gap: 12px;
 }
 
 .step-node {
@@ -348,7 +350,8 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   position: relative;
   z-index: 2;
-  width: 120px;
+  min-width: 110px;
+  width: auto;
 }
 
 .step-circle {
@@ -379,7 +382,7 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1;
   height: 2px;
   background-color: var(--border-color);
-  margin: 0 -20px;
+  margin: 0 -16px;
   position: relative;
   top: -10px;
   z-index: 1;
@@ -631,23 +634,23 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', sans-serif;
 }
 
-.info-banner {
-  background-color: var(--primary-light);
+..info-banner {
+  background-color: #eef4ff;
   border-radius: var(--radius-sm);
-  padding: 16px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid rgba(11, 60, 149, 0.1);
+  border: 1px solid #dbeafe;
 }
 
 .info-banner-left {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--primary-color);
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-main);
   font-weight: 500;
 }
 
@@ -1126,9 +1129,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Edit Template Styles */
+.template-editor-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .template-grid {
   display: grid;
-  grid-template-columns: 220px minmax(480px, 1fr) 400px;
+  grid-template-columns: 240px minmax(540px, 1fr) minmax(360px, 1fr);
   gap: 24px;
   flex: 1;
   align-items: start;
@@ -1249,7 +1259,8 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  height: 720px;
+  min-height: 0;
+  height: 100%;
   box-shadow: var(--shadow-sm);
 }
 
@@ -1324,7 +1335,9 @@ h1, h2, h3, h4, h5, h6 {
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .subject-label {
@@ -1336,11 +1349,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .subject-input {
   flex: 1;
+  min-width: 240px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  font-size: 13px;
+  padding: 12px 14px;
+  font-size: 14px;
   outline: none;
+  background-color: #ffffff;
 }
 
 .subject-input:focus {
@@ -1349,21 +1364,25 @@ h1, h2, h3, h4, h5, h6 {
 
 .editor-body-textarea {
   flex: 1;
-  border: none;
+  border: 1px solid var(--border-color);
   padding: 20px;
+  margin: 16px;
   font-size: 14px;
   font-family: inherit;
-  line-height: 1.6;
+  line-height: 1.7;
   resize: none;
   outline: none;
-  background-color: #ffffff;
+  background-color: #f8fafc;
+  border-radius: 14px;
+  min-height: 0;
 }
 
 /* Rich Letter Preview Panel */
 .letter-preview-container {
   display: flex;
   flex-direction: column;
-  height: 720px;
+  min-height: 0;
+  height: 100%;
   gap: 16px;
 }
 
@@ -1391,9 +1410,8 @@ h1, h2, h3, h4, h5, h6 {
   overflow-y: auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  background-color: #e2e8f0;
-  padding: 24px 12px;
+  background-color: #f8fafc;
+  padding: 24px 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1404,15 +1422,15 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #ffffff;
   padding: 36px;
   width: 100%;
-  max-width: 580px;
-  min-height: 720px;
+  max-width: 610px;
+  min-height: 660px;
   display: flex;
   flex-direction: column;
   position: relative;
   font-size: 13px;
   color: #1e293b;
-  line-height: 1.6;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  line-height: 1.7;
+  box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.08), 0 8px 12px -12px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--border-color);
   box-sizing: border-box;
   margin: 0 auto;

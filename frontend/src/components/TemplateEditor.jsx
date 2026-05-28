@@ -318,7 +318,7 @@ Sincerely,
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div className="template-editor-shell">
       
       {/* Step Wizard Header */}
       <div className="wizard-steps">
