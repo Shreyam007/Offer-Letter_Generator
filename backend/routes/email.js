@@ -12,7 +12,6 @@ import { inMemoryCampaigns, inMemoryCandidates } from './campaigns.js';
 
 const router = express.Router();
 
-// Helper to compile template variables
 const compileTemplate = (text, variables) => {
   if (!text) return '';
   let result = text;
@@ -20,7 +19,6 @@ const compileTemplate = (text, variables) => {
     const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'gi');
     result = result.replace(regex, variables[key] !== undefined && variables[key] !== null ? variables[key] : '');
   });
-  // Strip out any remaining curly brackets {{ ... }} to leave only the inner text/value
   result = result.replace(/{{\s*(.*?)\s*}}/g, '$1');
   return result;
 };
@@ -32,7 +30,6 @@ const getSmtpConfig = (smtp) => {
   if (!Number.isInteger(port) || port <= 0 || port > 65535) {
     port = 587;
   }
-
   const secure = smtp?.secure !== undefined
     ? Boolean(smtp.secure)
     : (process.env.SMTP_SECURE === 'true') || port === 465;
@@ -43,81 +40,91 @@ const getSmtpConfig = (smtp) => {
 };
 
 const validateSmtpConfig = ({ host, port, secure, user, pass }) => {
-  if (!host || !user || !pass) {
-    return 'Missing SMTP configuration. Enter host, port, user and password, or configure server environment variables.';
-  }
-
-  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-    return 'SMTP port must be a valid number between 1 and 65535.';
-  }
-
-  if (port === 465 && secure === false) {
-    return 'Port 465 requires secure SSL/TLS to be enabled. Turn on Secure SSL/TLS or use port 587.';
-  }
-
+  if (!host || !user || !pass) return 'Missing SMTP configuration. Enter host, port, user and password, or configure server environment variables.';
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) return 'SMTP port must be a valid number between 1 and 65535.';
+  if (port === 465 && secure === false) return 'Port 465 requires secure SSL/TLS to be enabled. Turn on Secure SSL/TLS or use port 587.';
   return null;
 };
 
-// Helper to create Nodemailer transporter
 const createTransporter = (smtp) => {
   const { host, port, secure, user, pass } = getSmtpConfig(smtp);
-
-  if (!host || !user || !pass) {
-    return null; // Signals mock mode
-  }
+  if (!host || !user || !pass) return null;
   return nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: {
-      user,
-      pass
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
+    host, port, secure,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false }
   });
 };
 
-// Helper to verify SMTP credentials and return a transporter if valid.
 const verifySmtp = async (smtp) => {
   const config = getSmtpConfig(smtp);
   const validationError = validateSmtpConfig(config);
-  if (validationError) {
-    return { ok: false, reason: validationError };
+  if (validationError) return { ok: false, reason: validationError };
+
+  // SUPER SENIOR DEV BYPASS: If host is Resend, bypass SMTP entirely due to Render firewall block on standard SMTP ports.
+  if (config.host.toLowerCase().includes('resend.com')) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        headers: { 'Authorization': `Bearer ${config.pass}` }
+      });
+      // 401 or 403 means bad token. Any other error (like 400 bad request) means the key is valid but payload is empty, which is expected.
+      if (res.status === 401 || res.status === 403) {
+        return { ok: false, reason: 'Invalid Resend API Key. Check your SMTP Password.' };
+      }
+      return { ok: true, transporter: null, config };
+    } catch (err) {
+      return { ok: false, reason: `Resend API Error: ${err.message}` };
+    }
   }
 
   const transporter = createTransporter(smtp);
   try {
     await transporter.verify();
-    return { ok: true, transporter };
+    return { ok: true, transporter, config };
   } catch (err) {
-    const message = err && err.message ? err.message : String(err);
-    return { ok: false, reason: message, code: err && err.code };
+    return { ok: false, reason: err.message || String(err), code: err.code };
   }
 };
 
-// POST test SMTP connection
+const sendMailViaTransporterOrApi = async (transporter, config, mailOptions) => {
+  if (config.host.toLowerCase().includes('resend.com')) {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.pass}`
+      },
+      body: JSON.stringify(mailOptions)
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || `Resend HTTP API failed with status ${res.status}`);
+    }
+    return true;
+  } else {
+    if (!transporter) throw new Error('No valid SMTP transporter configured.');
+    return await transporter.sendMail(mailOptions);
+  }
+};
+
 router.post('/test-smtp', async (req, res) => {
   const { smtp } = req.body;
   const config = getSmtpConfig(smtp);
   const validationError = validateSmtpConfig(config);
-  if (validationError) {
-    return res.status(400).json({ success: false, message: validationError });
-  }
+  if (validationError) return res.status(400).json({ success: false, message: validationError });
 
   try {
     const result = await verifySmtp(smtp);
     if (result.ok) {
-      return res.json({ success: true, message: 'SMTP connection verified successfully!' });
+      return res.json({ success: true, message: 'SMTP connection verified successfully! (Bypassing Render firewall if Resend)' });
     }
 
     const configDetails = `Host=${config.host}, Port=${config.port}, Secure=${config.secure}`;
     let suggestion = '';
     if (result.reason && /535|Authentication|Invalid login|BadCredentials/i.test(result.reason)) {
-      suggestion = 'If you are using Gmail, create an App Password and use it here (https://support.google.com/accounts/answer/185833). Alternatively, use a transactional email provider (SendGrid/Mailgun) or Mailtrap for testing.';
+      suggestion = 'If you are using Gmail, create an App Password. Alternatively, use a transactional email provider like Resend.';
     } else if (result.reason && /timeout|ETIMEDOUT|ECONNREFUSED|ENOTFOUND/i.test(result.reason)) {
-      suggestion = 'Check that your SMTP host, port, and SSL/TLS settings match your provider. Also verify network/firewall access to the SMTP server.';
+      suggestion = 'Render Free Tier blocks outbound SMTP (25, 465, 587). Use Resend (smtp.resend.com) and we will automatically route it via HTTP, or upgrade your Render plan.';
     }
 
     res.status(500).json({
@@ -131,298 +138,140 @@ router.post('/test-smtp', async (req, res) => {
   }
 });
 
-// POST send campaign (Asynchronous sending loop)
 router.post('/send-campaign', async (req, res) => {
   const { campaignId, candidateIds, delayMs, retryOnFailure } = req.body;
 
-  if (mongoose.connection.readyState !== 1) {
-    console.log('Database offline: Dispatching campaign in-memory.');
-    const campaign = inMemoryCampaigns.find(c => c._id === campaignId);
-    if (!campaign) {
-      return res.status(404).json({ message: 'Campaign not found' });
-    }
+  let campaign, company, template, targetCandidates;
+  const isOffline = mongoose.connection.readyState !== 1;
 
-    const targetCompanyId = typeof campaign.companyId === 'object' ? campaign.companyId._id : campaign.companyId;
-    const targetTemplateId = typeof campaign.templateId === 'object' ? campaign.templateId._id : campaign.templateId;
-
-    const company = inMemoryCompanies.find(c => c._id === targetCompanyId);
-    const template = inMemoryTemplates.find(t => t._id === targetTemplateId);
-
-    if (!company) {
-      return res.status(404).json({ message: 'Company profile not found for this campaign' });
-    }
-
-    const targetCandidates = inMemoryCandidates.filter(c => 
-      candidateIds.includes(c._id) && c.campaignId === campaignId
-    );
-
-    if (targetCandidates.length === 0) {
-      return res.status(400).json({ message: 'No candidates selected or found' });
-    }
-
-    // Require valid SMTP configuration for real sending.
-    const hasCompanySmtp = company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass;
-    const hasGlobalSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-    if (!hasCompanySmtp && !hasGlobalSmtp) {
-      return res.status(500).json({ message: 'SMTP configuration missing. Configure SMTP in the selected company profile or set SMTP environment variables on the server.' });
-    }
-    const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
-    if (!verifyResult.ok) {
-      return res.status(500).json({ message: `SMTP configuration invalid: ${verifyResult.reason}` });
-    }
-    const transporter = verifyResult.transporter;
-
-    // Set campaign status to Sending
-    campaign.status = 'Sending';
-    campaign.sentCount = 0;
-    campaign.failedCount = 0;
-
-    // Reset status of selected candidates to Pending before starting
-    targetCandidates.forEach(c => {
-      c.status = 'Pending';
-      c.error = '';
-    });
-
-    // Respond immediately to the frontend, processing runs in the background
-    res.json({ message: 'Offer letter dispatch started in background', total: targetCandidates.length });
-
-    // Asynchronous background execution
-    (async () => {
-      const delay = Number(delayMs) || 1500;
-
-      for (let i = 0; i < targetCandidates.length; i++) {
-        const candidate = targetCandidates[i];
-        
-        candidate.status = 'Sending';
-
-        // Prepare email content
-        const templateVariables = {
-          Name: candidate.name,
-          Role: candidate.role,
-          Department: candidate.department,
-          Salary: candidate.salary,
-          StartDate: candidate.joiningDate,
-          JoiningDate: candidate.joiningDate,
-          Company: company.name,
-          Manager: template && template.body.includes('{{Manager}}') ? 'HR Team' : '',
-          ...candidate.customFields
-        };
-
-        const mailSubject = compileTemplate(template ? template.subject : 'Offer of Employment', templateVariables);
-        const mailBody = compileTemplate(template ? template.body : 'Dear {{Name}}, Congratulations!', templateVariables);
-
-        let sentSuccess = false;
-        let errorMessage = '';
-        const maxRetries = retryOnFailure ? 3 : 1;
-
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-          if (attempt > 1) {
-            candidate.status = 'Retrying';
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-
-          try {
-              const senderEmailCandidates = [company.smtp?.from, process.env.SMTP_FROM, company.email, process.env.SMTP_USER];
-              const senderEmail = senderEmailCandidates.find(email => typeof email === 'string' && email.includes('@'));
-              if (!senderEmail) {
-                throw new Error('No valid sender email found. Set SMTP_FROM or company careers email before sending.');
-              }
-              await transporter.sendMail({
-                from: `"${company.name}" <${senderEmail}>`,
-                to: candidate.email,
-                subject: mailSubject,
-                text: mailBody,
-                html: mailBody.replace(/\n/g, '<br/>')
-              });
-            sentSuccess = true;
-            break; // Break out of retry loop on success
-          } catch (err) {
-            errorMessage = err.message;
-            console.error(`Attempt ${attempt} failed for ${candidate.email}: ${errorMessage}`);
-          }
-        }
-
-        if (sentSuccess) {
-          candidate.status = 'Sent';
-          candidate.error = '';
-          campaign.sentCount += 1;
-        } else {
-          candidate.status = 'Failed';
-          candidate.error = errorMessage;
-          campaign.failedCount += 1;
-        }
-
-        // Wait between emails (unless it is the last candidate)
-        if (i < targetCandidates.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
-      }
-
-      // Mark campaign completed
-      campaign.status = 'Completed';
-      console.log(`Campaign ${campaign.name} dispatch completed!`);
-    })();
-
-    return;
+  if (isOffline) {
+    campaign = inMemoryCampaigns.find(c => c._id === campaignId);
+    if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
+    company = inMemoryCompanies.find(c => c._id === (typeof campaign.companyId === 'object' ? campaign.companyId._id : campaign.companyId));
+    template = inMemoryTemplates.find(t => t._id === (typeof campaign.templateId === 'object' ? campaign.templateId._id : campaign.templateId));
+    targetCandidates = inMemoryCandidates.filter(c => candidateIds.includes(c._id) && c.campaignId === campaignId);
+  } else {
+    campaign = await Campaign.findById(campaignId);
+    if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
+    company = await Company.findById(campaign.companyId);
+    template = await Template.findById(campaign.templateId);
+    targetCandidates = await Candidate.find({ _id: { $in: candidateIds }, campaignId: campaignId });
   }
 
-  try {
-    const campaign = await Campaign.findById(campaignId);
-    if (!campaign) {
-      return res.status(404).json({ message: 'Campaign not found' });
-    }
+  if (!company) return res.status(404).json({ message: 'Company profile not found for this campaign' });
+  if (targetCandidates.length === 0) return res.status(400).json({ message: 'No candidates selected or found' });
 
-    const company = await Company.findById(campaign.companyId);
-    const template = await Template.findById(campaign.templateId);
+  const hasCompanySmtp = company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass;
+  const hasGlobalSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
+  if (!hasCompanySmtp && !hasGlobalSmtp) {
+    return res.status(500).json({ message: 'SMTP configuration missing. Configure SMTP in the selected company profile or set SMTP environment variables on the server.' });
+  }
 
-    if (!company) {
-      return res.status(404).json({ message: 'Company profile not found for this campaign' });
-    }
+  const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
+  if (!verifyResult.ok) {
+    return res.status(500).json({ message: `SMTP configuration invalid: ${verifyResult.reason}` });
+  }
 
-    const targetCandidates = await Candidate.find({
-      _id: { $in: candidateIds },
-      campaignId: campaignId
-    });
+  const { transporter, config: activeConfig } = verifyResult;
 
-    if (targetCandidates.length === 0) {
-      return res.status(400).json({ message: 'No candidates selected or found' });
-    }
+  campaign.status = 'Sending';
+  campaign.sentCount = 0;
+  campaign.failedCount = 0;
 
-    // Require valid SMTP configuration for real sending.
-    const hasCompanySmtp = company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass;
-    const hasGlobalSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-    if (!hasCompanySmtp && !hasGlobalSmtp) {
-      return res.status(500).json({ message: 'SMTP configuration missing. Configure SMTP in the selected company profile or set SMTP environment variables on the server.' });
-    }
-    const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
-    if (!verifyResult.ok) {
-      return res.status(500).json({ message: `SMTP configuration invalid: ${verifyResult.reason}` });
-    }
-    const transporter = verifyResult.transporter;
-
-    // Set campaign status to Sending
-    campaign.status = 'Sending';
-    campaign.sentCount = 0;
-    campaign.failedCount = 0;
+  if (isOffline) {
+    targetCandidates.forEach(c => { c.status = 'Pending'; c.error = ''; });
+  } else {
     await campaign.save();
+    await Candidate.updateMany({ _id: { $in: candidateIds } }, { $set: { status: 'Pending', error: '' } });
+  }
 
-    // Reset status of selected candidates to Pending before starting
-    await Candidate.updateMany(
-      { _id: { $in: candidateIds } },
-      { $set: { status: 'Pending', error: '' } }
-    );
+  res.json({ message: 'Offer letter dispatch started in background', total: targetCandidates.length });
 
-    // Respond immediately to the frontend, processing runs in the background
-    res.json({ message: 'Offer letter dispatch started in background', total: targetCandidates.length });
+  (async () => {
+    const delay = Number(delayMs) || 1500;
 
-    // Asynchronous background execution
-    (async () => {
-      const transporterInstance = transporter; // verified transporter or null fallback
-      const delay = Number(delayMs) || 1500;
+    for (let i = 0; i < targetCandidates.length; i++) {
+      const candidate = targetCandidates[i];
+      candidate.status = 'Sending';
+      if (!isOffline) await candidate.save();
 
-      for (let i = 0; i < targetCandidates.length; i++) {
-        const candidate = targetCandidates[i];
-        
-        // Update candidate status to Sending
-        candidate.status = 'Sending';
-        await candidate.save();
+      const templateVariables = {
+        Name: candidate.name,
+        Role: candidate.role,
+        Department: candidate.department,
+        Salary: candidate.salary,
+        StartDate: candidate.joiningDate,
+        JoiningDate: candidate.joiningDate,
+        Company: company.name,
+        Manager: template && template.body.includes('{{Manager}}') ? 'HR Team' : '',
+        ...(isOffline ? candidate.customFields : Object.fromEntries(candidate.customFields || new Map()))
+      };
 
-        // Prepare email content
-        const templateVariables = {
-          Name: candidate.name,
-          Role: candidate.role,
-          Department: candidate.department,
-          Salary: candidate.salary,
-          StartDate: candidate.joiningDate,
-          JoiningDate: candidate.joiningDate,
-          Company: company.name,
-          Manager: template && template.body.includes('{{Manager}}') ? 'HR Team' : '', // default if placeholder
-          ...Object.fromEntries(candidate.customFields || new Map())
-        };
+      const mailSubject = compileTemplate(template ? template.subject : 'Offer of Employment', templateVariables);
+      const mailBody = compileTemplate(template ? template.body : 'Dear {{Name}}, Congratulations!', templateVariables);
 
-        const mailSubject = compileTemplate(template ? template.subject : 'Offer of Employment', templateVariables);
-        const mailBody = compileTemplate(template ? template.body : 'Dear {{Name}}, Congratulations!', templateVariables);
+      let sentSuccess = false;
+      let errorMessage = '';
+      const maxRetries = retryOnFailure ? 3 : 1;
 
-        let sentSuccess = false;
-        let errorMessage = '';
-        const maxRetries = retryOnFailure ? 3 : 1;
-
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-          if (attempt > 1) {
-            candidate.status = 'Retrying';
-            await candidate.save();
-            // Wait a short time before retry
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-
-          try {
-              const senderEmailCandidates = [company.smtp?.from, process.env.SMTP_FROM, company.email, process.env.SMTP_USER];
-              const senderEmail = senderEmailCandidates.find(email => typeof email === 'string' && email.includes('@'));
-              if (!senderEmail) {
-                throw new Error('No valid sender email found. Set SMTP_FROM or company careers email before sending.');
-              }
-              await transporterInstance.sendMail({
-                from: `"${company.name}" <${senderEmail}>`,
-                to: candidate.email,
-                subject: mailSubject,
-                text: mailBody,
-                html: mailBody.replace(/\n/g, '<br/>') // Basic text to HTML formatting
-              });
-            sentSuccess = true;
-            break; // Break out of retry loop on success
-          } catch (err) {
-            errorMessage = err.message;
-            console.error(`Attempt ${attempt} failed for ${candidate.email}: ${errorMessage}`);
-          }
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        if (attempt > 1) {
+          candidate.status = 'Retrying';
+          if (!isOffline) await candidate.save();
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
-        if (sentSuccess) {
-          candidate.status = 'Sent';
-          candidate.error = '';
-          await candidate.save();
+        try {
+          const senderEmailCandidates = [company.smtp?.from, process.env.SMTP_FROM, company.email, process.env.SMTP_USER];
+          const senderEmail = senderEmailCandidates.find(email => typeof email === 'string' && email.includes('@'));
+          if (!senderEmail) throw new Error('No valid sender email found. Set SMTP_FROM or company careers email before sending.');
 
-          campaign.sentCount += 1;
-          await campaign.save();
+          const mailOptions = {
+            from: `"${company.name}" <${senderEmail}>`,
+            to: candidate.email,
+            subject: mailSubject,
+            text: mailBody,
+            html: mailBody.replace(/\n/g, '<br/>')
+          };
 
-          // Write to persistent History logs
-          await History.create({
-            campaignId,
-            candidateName: candidate.name,
-            candidateEmail: candidate.email,
-            status: 'Sent'
-          });
-        } else {
-          candidate.status = 'Failed';
-          candidate.error = errorMessage;
-          await candidate.save();
-
-          campaign.failedCount += 1;
-          await campaign.save();
-
-          await History.create({
-            campaignId,
-            candidateName: candidate.name,
-            candidateEmail: candidate.email,
-            status: 'Failed',
-            error: errorMessage
-          });
-        }
-
-        // Wait between emails (unless it is the last candidate)
-        if (i < targetCandidates.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await sendMailViaTransporterOrApi(transporter, activeConfig, mailOptions);
+          sentSuccess = true;
+          break;
+        } catch (err) {
+          errorMessage = err.message;
+          console.error(`Attempt ${attempt} failed for ${candidate.email}: ${errorMessage}`);
         }
       }
 
-      // Mark campaign completed
-      campaign.status = 'Completed';
-      await campaign.save();
-      console.log(`Campaign ${campaign.name} dispatch completed!`);
-    })();
+      if (sentSuccess) {
+        candidate.status = 'Sent';
+        candidate.error = '';
+        campaign.sentCount += 1;
+        if (!isOffline) {
+          await candidate.save();
+          await campaign.save();
+          await History.create({ campaignId, candidateName: candidate.name, candidateEmail: candidate.email, status: 'Sent' });
+        }
+      } else {
+        candidate.status = 'Failed';
+        candidate.error = errorMessage;
+        campaign.failedCount += 1;
+        if (!isOffline) {
+          await candidate.save();
+          await campaign.save();
+          await History.create({ campaignId, candidateName: candidate.name, candidateEmail: candidate.email, status: 'Failed', error: errorMessage });
+        }
+      }
 
-  } catch (error) {
-    console.error('Error dispatching campaign:', error);
-  }
+      if (i < targetCandidates.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    campaign.status = 'Completed';
+    if (!isOffline) await campaign.save();
+    console.log(`Campaign ${campaign.name} dispatch completed!`);
+  })();
 });
 
 export default router;
