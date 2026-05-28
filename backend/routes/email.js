@@ -27,26 +27,38 @@ const compileTemplate = (text, variables) => {
 
 // Helper to create Nodemailer transporter
 const createTransporter = (smtp) => {
-  if (!smtp || !smtp.host || !smtp.user || !smtp.pass) {
+  const host = smtp?.host || process.env.SMTP_HOST;
+  const port = Number(smtp?.port) || Number(process.env.SMTP_PORT) || 587;
+  const secure = smtp?.secure !== undefined ? smtp.secure : (process.env.SMTP_SECURE === 'true');
+  const user = smtp?.user || process.env.SMTP_USER;
+  const pass = smtp?.pass || process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
     return null; // Signals mock mode
   }
   return nodemailer.createTransport({
-    host: smtp.host,
-    port: Number(smtp.port) || 587,
-    secure: smtp.secure || false,
+    host,
+    port,
+    secure,
     auth: {
-      user: smtp.user,
-      pass: smtp.pass
+      user,
+      pass
     },
     tls: {
       rejectUnauthorized: false
-    }
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000
   });
 };
 
 // Helper to verify SMTP credentials and return a transporter if valid.
 const verifySmtp = async (smtp) => {
-  if (!smtp || !smtp.host || !smtp.user || !smtp.pass) {
+  const host = smtp?.host || process.env.SMTP_HOST;
+  const user = smtp?.user || process.env.SMTP_USER;
+  const pass = smtp?.pass || process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
     return { ok: false, reason: 'Missing SMTP configuration' };
   }
 
@@ -64,8 +76,12 @@ const verifySmtp = async (smtp) => {
 // POST test SMTP connection
 router.post('/test-smtp', async (req, res) => {
   const { smtp } = req.body;
-  if (!smtp || !smtp.host || !smtp.user || !smtp.pass) {
-    return res.status(400).json({ message: 'SMTP credentials missing. Enter host, port, user and password.' });
+  const host = smtp?.host || process.env.SMTP_HOST;
+  const user = smtp?.user || process.env.SMTP_USER;
+  const pass = smtp?.pass || process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    return res.status(400).json({ message: 'SMTP credentials missing. Enter host, port, user and password, or configure server environment variables.' });
   }
 
   try {
@@ -115,10 +131,12 @@ router.post('/send-campaign', async (req, res) => {
       return res.status(400).json({ message: 'No candidates selected or found' });
     }
 
-    // Verify SMTP if configured, otherwise default to simulation
+    // Verify SMTP if configured locally or globally, otherwise default to simulation
     let transporter = null;
-    if (company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass) {
-      const verifyResult = await verifySmtp(company.smtp);
+    const hasCompanySmtp = company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass;
+    const hasGlobalSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
+    if (hasCompanySmtp || hasGlobalSmtp) {
+      const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
       if (verifyResult.ok) {
         transporter = verifyResult.transporter;
       } else {
@@ -177,8 +195,10 @@ router.post('/send-campaign', async (req, res) => {
 
           try {
             if (transporter) {
+              const senderEmail = (company.smtp && company.smtp.user) || process.env.SMTP_FROM || process.env.SMTP_USER;
+              const finalSender = senderEmail === 'resend' ? 'onboarding@resend.dev' : senderEmail;
               await transporter.sendMail({
-                from: `"${company.name}" <${company.smtp.user}>`,
+                from: `"${company.name}" <${finalSender}>`,
                 to: candidate.email,
                 subject: mailSubject,
                 text: mailBody,
@@ -246,10 +266,12 @@ router.post('/send-campaign', async (req, res) => {
       return res.status(400).json({ message: 'No candidates selected or found' });
     }
 
-    // Verify SMTP if configured, otherwise default to simulation
+    // Verify SMTP if configured locally or globally, otherwise default to simulation
     let transporter = null;
-    if (company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass) {
-      const verifyResult = await verifySmtp(company.smtp);
+    const hasCompanySmtp = company.smtp && company.smtp.host && company.smtp.user && company.smtp.pass;
+    const hasGlobalSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
+    if (hasCompanySmtp || hasGlobalSmtp) {
+      const verifyResult = await verifySmtp(hasCompanySmtp ? company.smtp : {});
       if (verifyResult.ok) {
         transporter = verifyResult.transporter;
       } else {
@@ -315,8 +337,10 @@ router.post('/send-campaign', async (req, res) => {
           try {
             if (transporterInstance) {
               // Real SMTP email sending
+              const senderEmail = (company.smtp && company.smtp.user) || process.env.SMTP_FROM || process.env.SMTP_USER;
+              const finalSender = senderEmail === 'resend' ? 'onboarding@resend.dev' : senderEmail;
               await transporterInstance.sendMail({
-                from: `"${company.name}" <${company.smtp.user}>`,
+                from: `"${company.name}" <${finalSender}>`,
                 to: candidate.email,
                 subject: mailSubject,
                 text: mailBody,

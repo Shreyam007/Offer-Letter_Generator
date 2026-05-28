@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp, AICTE_LOGO_SVG, API_BASE } from '../context/AppContext';
-import { Building2, Save, Send, Trash2, Plus, Info, CheckCircle2, AlertTriangle, Play, Loader2 } from 'lucide-react';
+import { Building2, Save, Send, Trash2, Plus, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 
 const SettingsTab = () => {
@@ -34,95 +34,6 @@ const SettingsTab = () => {
 
   const [testingSmtp, setTestingSmtp] = useState(false);
   const [smtpStatus, setSmtpStatus] = useState(null); // { success: true/false, message: '' }
-  const [runningDiagnostics, setRunningDiagnostics] = useState(false);
-  const [diagnosticsResults, setDiagnosticsResults] = useState(null);
-
-  const runDiagnostics = async () => {
-    setRunningDiagnostics(true);
-    setDiagnosticsResults(null);
-    const results = [];
-    
-    // Test 1: Active API URL Configuration
-    results.push({ name: 'Active API URL Configuration', status: 'OK', details: `Vite is using API_BASE = "${API_BASE}"` });
-    
-    // Test 2: GET /companies
-    try {
-      const start = Date.now();
-      const res = await fetch(`${API_BASE}/companies`);
-      const duration = Date.now() - start;
-      if (res.ok) {
-        const data = await res.json();
-        results.push({ name: 'GET /companies', status: 'OK', details: `Succeeded in ${duration}ms. Retrieved ${data.length} companies from backend.` });
-      } else {
-        results.push({ name: 'GET /companies', status: 'FAILED', details: `Failed with status ${res.status} (${res.statusText}) in ${duration}ms.` });
-      }
-    } catch (err) {
-      results.push({ name: 'GET /companies', status: 'ERROR', details: `Network/CORS Error: ${err.name} - ${err.message}` });
-    }
-
-    // Test 3: GET /debug-state
-    try {
-      const start = Date.now();
-      const res = await fetch(`${API_BASE}/debug-state`);
-      const duration = Date.now() - start;
-      if (res.ok) {
-        const data = await res.json();
-        results.push({ name: 'GET /debug-state', status: 'OK', details: `Succeeded in ${duration}ms. Mongoose ReadyState: ${data.mongooseReadyState} (${data.mongooseReadyState === 1 ? 'DB Connected' : 'DB Offline Fallback Active'})` });
-      } else {
-        results.push({ name: 'GET /debug-state', status: 'FAILED', details: `Failed with status ${res.status} (${res.statusText}) in ${duration}ms.` });
-      }
-    } catch (err) {
-      results.push({ name: 'GET /debug-state', status: 'ERROR', details: `Network/CORS Error: ${err.name} - ${err.message}` });
-    }
-
-    // Test 4: POST /campaigns
-    let mockCampId = null;
-    try {
-      const start = Date.now();
-      const res = await fetch(`${API_BASE}/campaigns`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Vite Diagnostics Campaign', companyId: 'mock-company-quillon-id' })
-      });
-      const duration = Date.now() - start;
-      if (res.ok) {
-        const data = await res.json();
-        mockCampId = data._id;
-        results.push({ name: 'POST /campaigns', status: 'OK', details: `Succeeded in ${duration}ms. Created Campaign ID: ${mockCampId}` });
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        results.push({ name: 'POST /campaigns', status: 'FAILED', details: `Failed with status ${res.status} in ${duration}ms. Msg: ${errData.message || res.statusText}` });
-      }
-    } catch (err) {
-      results.push({ name: 'POST /campaigns', status: 'ERROR', details: `Network/CORS Error: ${err.name} - ${err.message}` });
-    }
-
-    // Test 5: POST /campaigns/:id/candidates
-    if (mockCampId) {
-      try {
-        const start = Date.now();
-        const res = await fetch(`${API_BASE}/campaigns/${mockCampId}/candidates`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify([{ name: 'Test Diagnostic Candidate', email: 'test.diag@example.com' }])
-        });
-        const duration = Date.now() - start;
-        if (res.ok) {
-          results.push({ name: 'POST /campaigns/:id/candidates', status: 'OK', details: `Succeeded in ${duration}ms. Candidates uploaded successfully.` });
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          results.push({ name: 'POST /campaigns/:id/candidates', status: 'FAILED', details: `Failed with status ${res.status} in ${duration}ms. Msg: ${errData.message || res.statusText}` });
-        }
-      } catch (err) {
-        results.push({ name: 'POST /campaigns/:id/candidates', status: 'ERROR', details: `Network/CORS Error: ${err.name} - ${err.message}` });
-      }
-    } else {
-      results.push({ name: 'POST /campaigns/:id/candidates', status: 'SKIPPED', details: 'Skipped because campaign creation failed.' });
-    }
-
-    setDiagnosticsResults(results);
-    setRunningDiagnostics(false);
-  };
 
 
   // Sync activeCompany when companies list is loaded or changed
@@ -534,6 +445,10 @@ const SettingsTab = () => {
                 </div>
               </div>
 
+              <div className="text-xs text-slate-500 mt-2 mb-4 bg-slate-50 p-2.5 rounded border border-slate-200" style={{ lineHeight: '1.5' }}>
+                💡 <strong>Need credentials for testing?</strong> Visit <a href="https://ethereal.email" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">ethereal.email</a> and click <strong>"Create Ethereal Account"</strong> to generate a temporary test mailbox, then paste its Username and Password here. For real dispatches, use your company's SMTP or Gmail with an <strong>App Password</strong>.
+              </div>
+
               <div className="toggle-group mt-2">
                 <div className="flex flex-col">
                   <span className="form-label" style={{ marginBottom: '2px' }}>Use Secure SSL/TLS</span>
@@ -592,71 +507,7 @@ const SettingsTab = () => {
 
       </div>
 
-      {/* Diagnostics panel */}
-      <div className="card" style={{ marginTop: '24px', border: '1px solid #cbd5e1' }}>
-        <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
-          <div>
-            <h3 className="font-bold text-lg text-slate-800">Connection & API Diagnostics</h3>
-            <p className="text-slate-500 text-xs mt-0.5">Diagnose fetch/CORS errors and verify communication with the Render backend.</p>
-          </div>
-          <button
-            type="button"
-            className="btn btn-secondary flex items-center gap-2"
-            style={{ padding: '8px 16px', fontSize: '13px', backgroundColor: '#f1f5f9' }}
-            onClick={runDiagnostics}
-            disabled={runningDiagnostics}
-          >
-            {runningDiagnostics ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
-            <span>{runningDiagnostics ? 'Running Tests...' : 'Run API Self-Test'}</span>
-          </button>
-        </div>
 
-        {diagnosticsResults ? (
-          <div className="diagnostics-log" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {diagnosticsResults.map((r, i) => (
-              <div
-                key={i}
-                className="diag-row"
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  padding: '8px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: r.status === 'OK' ? '#f0fdf4' : r.status === 'SKIPPED' ? '#f8fafc' : '#fef2f2',
-                  border: `1px solid ${r.status === 'OK' ? '#bbf7d0' : r.status === 'SKIPPED' ? '#e2e8f0' : '#fca5a5'}`,
-                  fontSize: '13px'
-                }}
-              >
-                <div
-                  className="diag-status-badge"
-                  style={{
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontWeight: 'bold',
-                    fontSize: '11px',
-                    backgroundColor: r.status === 'OK' ? '#dcfce7' : r.status === 'SKIPPED' ? '#f1f5f9' : '#fee2e2',
-                    color: r.status === 'OK' ? '#15803d' : r.status === 'SKIPPED' ? '#475569' : '#b91c1c',
-                    width: '65px',
-                    textAlign: 'center',
-                    flexShrink: 0
-                  }}
-                >
-                  {r.status}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: '600', color: '#1e293b' }}>{r.name}</div>
-                  <div style={{ color: '#475569', fontSize: '12px', marginTop: '2px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{r.details}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ fontSize: '13px', color: '#64748b', textAlign: 'center', padding: '16px 0' }}>
-            Click "Run API Self-Test" to run connection tests. If CORS or Network blocks are present, they will show up here.
-          </div>
-        )}
-      </div>
     </div>
   );
 };
