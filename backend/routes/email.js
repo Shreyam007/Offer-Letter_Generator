@@ -23,6 +23,19 @@ const compileTemplate = (text, variables) => {
   return result;
 };
 
+// Convert an SVG string to a base64 data URI that email clients can render as <img>.
+// If the string is already a URL (http/data), return it as-is.
+const svgToDataUri = (logoStr) => {
+  if (!logoStr) return '';
+  const trimmed = logoStr.trim();
+  if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return trimmed;
+  if (trimmed.startsWith('<svg')) {
+    const base64 = Buffer.from(trimmed).toString('base64');
+    return `data:image/svg+xml;base64,${base64}`;
+  }
+  return trimmed; // unknown format, pass through
+};
+
 const getSmtpConfig = (smtp) => {
   const host = smtp?.host || process.env.SMTP_HOST;
   const rawPort = smtp?.port ?? process.env.SMTP_PORT ?? 587;
@@ -223,8 +236,9 @@ router.post('/send-campaign', async (req, res) => {
 
         const templateStyle = template ? (template.style || 'Modern') : 'Modern';
         const bodyHtml = mailBody.replace(/\n/g, '<br/>');
-        const logoHtml = company.logo ? `<img src="${company.logo}" style="height: 48px; object-fit: contain; max-width: 150px;" alt="${company.name}" />` : '';
-        const logoBoxHtml = logoHtml ? `<div style="height: 48px; display: flex; align-items: center; justify-content: center;">${logoHtml}</div>` : `<div style="font-size: 24px; font-weight: bold; color: #1e293b;">${company.name}</div>`;
+        const logoSrc = svgToDataUri(company.logo);
+        const logoHtml = logoSrc ? `<img src="${logoSrc}" style="height: 48px; object-fit: contain; max-width: 150px;" alt="${company.name}" />` : '';
+        const logoBoxHtml = logoHtml ? `<div style="height: 48px;">${logoHtml}</div>` : `<div style="font-size: 24px; font-weight: bold; color: #1e293b;">${company.name}</div>`;
         
         let htmlEmail = '';
 
@@ -300,7 +314,7 @@ router.post('/send-campaign', async (req, res) => {
             <body>
               <div class="letter-container">
                 <div class="header">
-                  <div style="display: table-cell; vertical-align: middle;">${logoHtml ? `<img src="${company.logo}" style="height: 36px; object-fit: contain; filter: grayscale(1);" />` : ''}</div>
+                  <div style="display: table-cell; vertical-align: middle;">${logoSrc ? `<img src="${logoSrc}" style="height: 36px; object-fit: contain; filter: grayscale(1);" alt="${company.name}" />` : ''}</div>
                   <div style="display: table-cell; vertical-align: middle; text-align: right; font-size: 12px; font-weight: bold; color: #0f172a;">${company.name}</div>
                 </div>
                 <div class="date-ref">
