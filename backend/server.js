@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connectDB, { getConnectionError } from './config/db.js';
+import connectDB, { getConnectionError, dbReady } from './config/db.js';
 import seedDatabase from './config/seed.js';
 import mongoose from 'mongoose';
 import { inMemoryCampaigns, inMemoryCandidates } from './routes/campaigns.js';
@@ -16,12 +16,8 @@ import emailRoutes from './routes/email.js';
 
 dotenv.config();
 
-// Connect to MongoDB and Seed
-const startDB = async () => {
-  await connectDB();
-  await seedDatabase();
-};
-startDB();
+// Start DB asynchronously (no await) – it will set dbReady when connected
+connectDB().then(() => seedDatabase()).catch(console.error);
 
 
 const app = express();
@@ -40,6 +36,11 @@ app.use('/api/email', emailRoutes);
 // Health check
 app.get('/', (req, res) => {
   res.send('OfferFlow HR API is running...');
+});
+
+// New ready endpoint for frontend to know when DB is connected
+app.get('/api/ready', (req, res) => {
+  res.json({ ready: dbReady.value });
 });
 
 // Diagnostics endpoint
@@ -61,5 +62,5 @@ app.get('/api/debug-state', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running in development mode on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
