@@ -221,6 +221,50 @@ router.post('/send-campaign', async (req, res) => {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
+        const htmlEmail = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f7fa; padding: 20px; color: #0f172a; }
+              .letter-container { max-width: 650px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 8px; border: 1px solid #e2e8f0; }
+              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
+              .company-name { font-size: 24px; font-weight: bold; color: #0b3c95; text-transform: uppercase; letter-spacing: 1px; }
+              .content { font-size: 15px; line-height: 1.6; color: #1e293b; margin-bottom: 30px; }
+              .stats-grid { display: table; width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #cbd5e1; background-color: #f8fafc; }
+              .stat-item { display: table-cell; padding: 15px; text-align: center; width: 50%; }
+              .stat-item:first-child { border-right: 1px solid #cbd5e1; }
+              .stat-label { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 5px; }
+              .stat-value { font-size: 16px; font-weight: bold; color: #0f172a; }
+              .footer { text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+            </style>
+          </head>
+          <body>
+            <div class="letter-container">
+              <div class="header">
+                <div class="company-name">${company.name}</div>
+              </div>
+              <div class="content">
+                ${mailBody.replace(/\n/g, '<br/>')}
+              </div>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-label">Salary</div>
+                  <div class="stat-value">${candidate.salary || '-'}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Start Date</div>
+                  <div class="stat-value">${candidate.joiningDate || '-'}</div>
+                </div>
+              </div>
+              <div class="footer">
+                This is an official document from ${company.name} HR Department.
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+
         try {
           const senderEmailCandidates = [company.smtp?.from, process.env.SMTP_FROM, company.email, process.env.SMTP_USER];
           const senderEmail = senderEmailCandidates.find(email => typeof email === 'string' && email.includes('@'));
@@ -231,7 +275,7 @@ router.post('/send-campaign', async (req, res) => {
             to: candidate.email,
             subject: mailSubject,
             text: mailBody,
-            html: mailBody.replace(/\n/g, '<br/>')
+            html: htmlEmail
           };
 
           await sendMailViaTransporterOrApi(transporter, activeConfig, mailOptions);
