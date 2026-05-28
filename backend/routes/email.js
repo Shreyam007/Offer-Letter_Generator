@@ -221,49 +221,164 @@ router.post('/send-campaign', async (req, res) => {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
-        const htmlEmail = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <style>
-              body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f7fa; padding: 20px; color: #0f172a; }
-              .letter-container { max-width: 650px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 8px; border: 1px solid #e2e8f0; }
-              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
-              .company-name { font-size: 24px; font-weight: bold; color: #0b3c95; text-transform: uppercase; letter-spacing: 1px; }
-              .content { font-size: 15px; line-height: 1.6; color: #1e293b; margin-bottom: 30px; }
-              .stats-grid { display: table; width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #cbd5e1; background-color: #f8fafc; }
-              .stat-item { display: table-cell; padding: 15px; text-align: center; width: 50%; }
-              .stat-item:first-child { border-right: 1px solid #cbd5e1; }
-              .stat-label { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 5px; }
-              .stat-value { font-size: 16px; font-weight: bold; color: #0f172a; }
-              .footer { text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-            </style>
-          </head>
-          <body>
-            <div class="letter-container">
-              <div class="header">
-                <div class="company-name">${company.name}</div>
-              </div>
-              <div class="content">
-                ${mailBody.replace(/\n/g, '<br/>')}
-              </div>
-              <div class="stats-grid">
-                <div class="stat-item">
-                  <div class="stat-label">Salary</div>
-                  <div class="stat-value">${candidate.salary || '-'}</div>
+        const templateStyle = template ? (template.style || 'Modern') : 'Modern';
+        const bodyHtml = mailBody.replace(/\n/g, '<br/>');
+        const logoHtml = company.logo ? `<img src="${company.logo}" style="height: 48px; object-fit: contain; max-width: 150px;" alt="${company.name}" />` : '';
+        const logoBoxHtml = logoHtml ? `<div style="height: 48px; display: flex; align-items: center; justify-content: center;">${logoHtml}</div>` : `<div style="font-size: 24px; font-weight: bold; color: #1e293b;">${company.name}</div>`;
+        
+        let htmlEmail = '';
+
+        if (templateStyle === 'Classic') {
+          htmlEmail = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Georgia, serif; background-color: #f5f7fa; padding: 20px; color: #0f172a; }
+                .letter-container { max-width: 650px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 4px; border: 1px solid #e2e8f0; }
+                .header { text-align: center; border-bottom: 3px double #94a3b8; padding-bottom: 24px; margin-bottom: 36px; }
+                .company-title { font-size: 24px; font-weight: bold; color: #1e293b; letter-spacing: 2px; text-transform: uppercase; margin-top: 16px; margin-bottom: 6px; }
+                .date-ref { display: table; width: 100%; font-size: 12px; margin-bottom: 28px; color: #475569; }
+                .content { text-align: justify; margin-bottom: 32px; white-space: pre-wrap; color: #1e293b; line-height: 1.7; }
+                .stats-grid { display: table; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; background-color: #f8fafc; margin-bottom: 32px; }
+                .stat-item { display: table-cell; text-align: center; padding: 12px; width: 50%; }
+                .stat-item:first-child { border-right: 1px solid #cbd5e1; }
+                .stat-label { font-size: 9px; text-transform: uppercase; font-weight: bold; color: #475569; letter-spacing: 1px; margin-bottom: 4px; }
+                .stat-value { font-size: 15px; font-weight: bold; color: #0f172a; }
+                .sign { margin-top: 40px; line-height: 1.6; color: #1e293b; }
+              </style>
+            </head>
+            <body>
+              <div class="letter-container">
+                <div class="header">
+                  ${logoBoxHtml}
+                  <div class="company-title">${company.name}</div>
+                  <div style="font-size: 11px; color: #64748b;">${company.tagline || ''}</div>
                 </div>
-                <div class="stat-item">
-                  <div class="stat-label">Start Date</div>
-                  <div class="stat-value">${candidate.joiningDate || '-'}</div>
+                <div class="date-ref">
+                  <div style="display: table-cell; text-align: left;">Ref: GC-2026-DIS-092</div>
+                  <div style="display: table-cell; text-align: right;">October 24, 2026</div>
+                </div>
+                <div class="content">${bodyHtml}</div>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <div class="stat-label">Salary</div>
+                    <div class="stat-value">${candidate.salary || '-'}</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">Start Date</div>
+                    <div class="stat-value">${candidate.joiningDate || '-'}</div>
+                  </div>
+                </div>
+                <div class="sign">
+                  Sincerely,<br/><br/><br/>
+                  <strong>HR Department</strong><br/>
+                  ${company.name}
                 </div>
               </div>
-              <div class="footer">
-                This is an official document from ${company.name} HR Department.
+            </body>
+            </html>
+          `;
+        } else if (templateStyle === 'Minimal') {
+          htmlEmail = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f7fa; padding: 20px; color: #334155; }
+                .letter-container { max-width: 650px; margin: 0 auto; background-color: #ffffff; padding: 30px; border: 1px solid #e2e8f0; }
+                .header { display: table; width: 100%; margin-bottom: 32px; }
+                .date-ref { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
+                .content { margin-bottom: 24px; white-space: pre-wrap; font-size: 12px; line-height: 1.6; }
+                .stats-grid { display: table; width: 100%; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 24px; }
+                .stat-item { display: table-cell; width: 50%; }
+                .stat-label { font-size: 10px; color: #94a3b8; margin-bottom: 4px; text-transform: uppercase; }
+                .stat-value { font-size: 13px; font-weight: bold; color: #0f172a; }
+                .notice { font-size: 11px; color: #94a3b8; margin-top: 40px; }
+              </style>
+            </head>
+            <body>
+              <div class="letter-container">
+                <div class="header">
+                  <div style="display: table-cell; vertical-align: middle;">${logoHtml ? `<img src="${company.logo}" style="height: 36px; object-fit: contain; filter: grayscale(1);" />` : ''}</div>
+                  <div style="display: table-cell; vertical-align: middle; text-align: right; font-size: 12px; font-weight: bold; color: #0f172a;">${company.name}</div>
+                </div>
+                <div class="date-ref">
+                  October 24, 2026 / Ref: GC-2026-DIS
+                </div>
+                <div class="content">${bodyHtml}</div>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <div class="stat-label">COMPENSATION</div>
+                    <div class="stat-value">${candidate.salary || '-'}</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">START DATE</div>
+                    <div class="stat-value">${candidate.joiningDate || '-'}</div>
+                  </div>
+                </div>
+                <div class="notice">
+                  CONFIDENTIALITY NOTICE: The information in this document is private.
+                </div>
               </div>
-            </div>
-          </body>
-          </html>
-        `;
+            </body>
+            </html>
+          `;
+        } else {
+          // Modern
+          htmlEmail = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f7fa; padding: 20px; color: #0f172a; }
+                .letter-container { max-width: 650px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 8px; border: 1px solid #e2e8f0; border-top: 6px solid #0b3c95; }
+                .header { display: table; width: 100%; border-bottom: 1px solid #e2e8f0; padding-bottom: 24px; margin-bottom: 32px; }
+                .date-ref { text-align: right; font-size: 12px; color: #64748b; line-height: 1.5; }
+                .recipient { margin-bottom: 24px; }
+                .content { font-size: 14px; line-height: 1.6; color: #1e293b; margin-bottom: 32px; white-space: pre-wrap; }
+                .stats-grid { display: table; width: 100%; border-collapse: collapse; margin-bottom: 32px; background-color: #f8fafc; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
+                .stat-item { display: table-cell; padding: 16px; width: 50%; border-right: 1px solid #e2e8f0; }
+                .stat-item:last-child { border-right: none; }
+                .stat-label { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px; }
+                .stat-value { font-size: 14px; font-weight: bold; color: #0b3c95; }
+                .footer { border-top: 1px solid #e2e8f0; padding-top: 16px; font-size: 11px; color: #94a3b8; }
+              </style>
+            </head>
+            <body>
+              <div class="letter-container">
+                <div class="header">
+                  <div style="display: table-cell; vertical-align: middle;">
+                    ${logoBoxHtml}
+                  </div>
+                  <div style="display: table-cell; vertical-align: middle;" class="date-ref">
+                    <div>October 24, 2026</div>
+                    <div>Ref: GC-2026-DIS-092</div>
+                  </div>
+                </div>
+                <div class="recipient">
+                  <strong style="font-size: 16px;">Dear ${candidate.name},</strong>
+                  <div style="color: #64748b; font-size: 11px; margin-top: 2px;">${candidate.email}</div>
+                </div>
+                <div class="content">${bodyHtml}</div>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <div class="stat-label">Annual Salary</div>
+                    <div class="stat-value">${candidate.salary || '-'}</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">Start Date</div>
+                    <div class="stat-value">${candidate.joiningDate || '-'}</div>
+                  </div>
+                </div>
+                <div class="footer">
+                  This is an official document from ${company.name} HR department.
+                </div>
+              </div>
+            </body>
+            </html>
+          `;
+        }
 
         try {
           const senderEmailCandidates = [company.smtp?.from, process.env.SMTP_FROM, company.email, process.env.SMTP_USER];

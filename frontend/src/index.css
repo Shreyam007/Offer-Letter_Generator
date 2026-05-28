@@ -1128,11 +1128,13 @@ h1, h2, h3, h4, h5, h6 {
 /* Edit Template Styles */
 .template-grid {
   display: grid;
-  grid-template-columns: 240px 1fr 340px;
+  grid-template-columns: 220px minmax(480px, 1fr) 400px;
   gap: 24px;
   flex: 1;
   align-items: start;
-  min-height: 0; /* Important for flex child scrolling */
+  min-height: 0;
+  overflow-x: auto;
+  padding-bottom: 12px;
 }
 
 .template-sidebar {
@@ -1247,7 +1249,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  height: 640px;
+  height: 720px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -1361,7 +1363,7 @@ h1, h2, h3, h4, h5, h6 {
 .letter-preview-container {
   display: flex;
   flex-direction: column;
-  height: 640px;
+  height: 720px;
   gap: 16px;
 }
 
