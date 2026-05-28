@@ -27,9 +27,14 @@ const compileTemplate = (text, variables) => {
 
 const getSmtpConfig = (smtp) => {
   const host = smtp?.host || process.env.SMTP_HOST;
-  const port = Number(smtp?.port ?? process.env.SMTP_PORT ?? 587);
+  const rawPort = smtp?.port ?? process.env.SMTP_PORT ?? 587;
+  let port = Number(rawPort);
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+    port = 587;
+  }
+
   const secure = smtp?.secure !== undefined
-    ? smtp.secure
+    ? Boolean(smtp.secure)
     : (process.env.SMTP_SECURE === 'true') || port === 465;
   const user = smtp?.user || process.env.SMTP_USER;
   const pass = smtp?.pass || process.env.SMTP_PASS;
@@ -40,6 +45,10 @@ const getSmtpConfig = (smtp) => {
 const validateSmtpConfig = ({ host, port, secure, user, pass }) => {
   if (!host || !user || !pass) {
     return 'Missing SMTP configuration. Enter host, port, user and password, or configure server environment variables.';
+  }
+
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+    return 'SMTP port must be a valid number between 1 and 65535.';
   }
 
   if (port === 465 && secure === false) {
@@ -66,9 +75,7 @@ const createTransporter = (smtp) => {
     },
     tls: {
       rejectUnauthorized: false
-    },
-    connectionTimeout: 5000,
-    greetingTimeout: 5000
+    }
   });
 };
 
@@ -105,12 +112,20 @@ router.post('/test-smtp', async (req, res) => {
       return res.json({ success: true, message: 'SMTP connection verified successfully!' });
     }
 
+    const configDetails = `Host=${config.host}, Port=${config.port}, Secure=${config.secure}`;
     let suggestion = '';
     if (result.reason && /535|Authentication|Invalid login|BadCredentials/i.test(result.reason)) {
       suggestion = 'If you are using Gmail, create an App Password and use it here (https://support.google.com/accounts/answer/185833). Alternatively, use a transactional email provider (SendGrid/Mailgun) or Mailtrap for testing.';
+    } else if (result.reason && /timeout|ETIMEDOUT|ECONNREFUSED|ENOTFOUND/i.test(result.reason)) {
+      suggestion = 'Check that your SMTP host, port, and SSL/TLS settings match your provider. Also verify network/firewall access to the SMTP server.';
     }
 
-    res.status(500).json({ success: false, message: `SMTP connection failed: ${result.reason}`, suggestion });
+    res.status(500).json({
+      success: false,
+      message: `SMTP connection failed: ${result.reason}`,
+      details: configDetails,
+      suggestion
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: `SMTP connection failed: ${error.message}` });
   }
