@@ -40,4 +40,4 @@ export const connectDB = async () => {
 
 export const getConnectionError = () => lastConnectionError;
 
-export { connectDB as default, getConnectionError };
+export { connectDB as default };
