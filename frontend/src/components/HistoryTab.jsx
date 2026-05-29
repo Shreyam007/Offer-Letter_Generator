@@ -11,7 +11,8 @@ import {
   TrendingUp, 
   Layers,
   ChevronRight,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react';
 
 const HistoryTab = () => {
