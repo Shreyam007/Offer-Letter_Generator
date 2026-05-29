@@ -28,6 +28,22 @@ const DataReview = () => {
     setStep 
   } = useApp();
 
+  const getStatusClass = (status) => {
+    if (!status) return 'pending';
+    const s = status.toLowerCase();
+    switch (s) {
+      case 'validated': return 'validated';
+      case 'invalid email': return 'invalid';
+      case 'pending': return 'pending';
+      case 'sending': return 'sending';
+      case 'sent': return 'sent';
+      case 'failed': return 'failed';
+      case 'retrying': return 'retrying';
+      case 'opened': return 'opened';
+      default: return 'invalid';
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [sortField, setSortField] = useState('name');
@@ -391,7 +407,7 @@ const DataReview = () => {
                   />
                 </td>
                 <td>
-                  <span className={`status-badge ${c.status === 'Validated' ? 'validated' : 'invalid'}`}>
+                  <span className={`status-badge ${getStatusClass(c.status)}`}>
                     <span className="status-dot"></span>
                     <span>{c.status}</span>
                   </span>

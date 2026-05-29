@@ -487,7 +487,7 @@ Sincerely,
           />
 
           {/* Bottom Action buttons */}
-          <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', backgroundColor: '#f8fafc' }}>
+          <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', backgroundColor: 'var(--bg-card)' }}>
             <button 
               className="btn btn-secondary"
               onClick={() => setStep(currentCampaign ? 2 : 1)}

@@ -551,7 +551,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-secondary {
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   border-color: var(--border-color);
   color: var(--text-muted);
 }
@@ -559,7 +559,7 @@ h1, h2, h3, h4, h5, h6 {
 .btn-secondary:hover {
   border-color: var(--border-hover);
   color: var(--text-main);
-  background-color: #f8fafc;
+  background-color: var(--bg-sidebar);
 }
 
 .btn-danger {
@@ -944,12 +944,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .table-cell-input:hover {
-  background-color: #f1f5f9;
+  background-color: var(--bg-sidebar);
 }
 
 .table-cell-input:focus {
   border-color: var(--accent-color);
-  background-color: #ffffff;
+  background-color: var(--bg-app);
   outline: none;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
@@ -1030,7 +1030,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 32px;
   height: 32px;
   border: 1px solid var(--border-color);
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -1043,7 +1043,7 @@ h1, h2, h3, h4, h5, h6 {
 .pagination-btn:hover:not(:disabled) {
   border-color: var(--border-hover);
   color: var(--text-main);
-  background-color: #f8fafc;
+  background-color: var(--bg-sidebar);
 }
 
 .pagination-btn:disabled {
@@ -1070,7 +1070,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0 8px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   outline: none;
 }
 
@@ -1203,13 +1203,13 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   transition: all 0.2s ease;
 }
 
 .style-card:hover {
   border-color: var(--border-hover);
-  background-color: #f8fafc;
+  background-color: var(--bg-sidebar);
 }
 
 .style-card.selected {
@@ -1302,7 +1302,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f8fafc;
+  background-color: var(--bg-sidebar);
 }
 
 .toolbar-left-actions {
@@ -1387,7 +1387,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 12px 14px;
   font-size: 14px;
   outline: none;
-  background-color: #ffffff;
+  background-color: var(--bg-card);
 }
 
 .subject-input:focus {
@@ -1734,7 +1734,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  background-color: #f8fafc;
+  background-color: var(--bg-app);
   overflow: hidden;
 }
 
@@ -1754,7 +1754,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   color: var(--text-muted);
   border-left: 1px solid var(--border-color);
-  background-color: #f1f5f9;
+  background-color: var(--bg-sidebar);
   height: 38px;
   display: flex;
   align-items: center;
@@ -2388,4 +2388,44 @@ body.dark-mode ::-webkit-scrollbar-thumb {
 }
 body.dark-mode ::-webkit-scrollbar-thumb:hover {
   background: var(--border-hover);
+}
+
+/* Dark Mode Status Badges Harmonization */
+body.dark-mode .status-badge.validated {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+body.dark-mode .status-badge.invalid {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+}
+body.dark-mode .status-badge.pending {
+  background-color: rgba(148, 163, 184, 0.15) !important;
+  color: #cbd5e1 !important;
+}
+body.dark-mode .status-badge.sending {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+}
+body.dark-mode .status-badge.sent {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+body.dark-mode .status-badge.failed {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+}
+body.dark-mode .status-badge.retrying {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+}
+
+/* Opened Status Badge Styles (Light & Dark) */
+.status-badge.opened {
+  background-color: #eef2ff;
+  color: #4f46e5;
+}
+body.dark-mode .status-badge.opened {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #818cf8 !important;
 }
