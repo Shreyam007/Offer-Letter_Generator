@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp, AICTE_LOGO_SVG, API_BASE } from '../context/AppContext';
 import { 
   ArrowLeft, 
@@ -78,6 +78,30 @@ Sincerely,
   const [style, setStyle] = useState('Modern');
   const [htmlMode, setHtmlMode] = useState(false);
   const [templateId, setTemplateId] = useState(null);
+
+  // Dynamic scale preview
+  const [scale, setScale] = useState(1);
+  const previewContainerRef = useRef(null);
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        const containerWidth = entry.contentRect.width;
+        const targetWidth = containerWidth - 32; // subtract padding
+        if (targetWidth < 610) {
+          setScale(targetWidth / 610);
+        } else {
+          setScale(1);
+        }
+      }
+    });
+
+    if (previewContainerRef.current) {
+      resizeObserver.observe(previewContainerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const escapeHtml = (text) => {
     if (!text) return '';
@@ -343,77 +367,68 @@ Sincerely,
         </div>
       </div>
 
-      {/* Main Grid Editor Canvas */}
-      <div className="template-grid">
-        
-        {/* Left Column: Template Style & Logo */}
-        <div className="template-sidebar">
-          <div>
-            <div className="settings-label">Template Style</div>
-            <div className="style-card-group">
-              <div 
-                className={`style-card ${style === 'Modern' ? 'selected' : ''}`}
-                onClick={() => handleStyleChange('Modern')}
-              >
-                <div className="style-card-info">
-                  <span className="style-card-name">Modern</span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Blue border, sidebar logo</span>
-                </div>
-                <div className="style-card-indicator"></div>
-              </div>
-
-              <div 
-                className={`style-card ${style === 'Classic' ? 'selected' : ''}`}
-                onClick={() => handleStyleChange('Classic')}
-              >
-                <div className="style-card-info">
-                  <span className="style-card-name">Classic</span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Georgia serif, centered header</span>
-                </div>
-                <div className="style-card-indicator"></div>
-              </div>
-
-              <div 
-                className={`style-card ${style === 'Minimal' ? 'selected' : ''}`}
-                onClick={() => handleStyleChange('Minimal')}
-              >
-                <div className="style-card-info">
-                  <span className="style-card-name">Minimal</span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Monochrome, simple layout</span>
-                </div>
-                <div className="style-card-indicator"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Company Logo section */}
-          <div>
-            <div className="settings-label">Company Logo</div>
-            <div 
-              className="logo-upload-box"
-              onClick={() => document.getElementById('logo-upload-input').click()}
+      {/* Top Configuration Bar: Style Selector & Logo Uploader */}
+      <div className="editor-top-bar">
+        <div className="top-bar-section">
+          <span className="top-bar-label">Template Style</span>
+          <div className="style-pills">
+            <button 
+              type="button"
+              className={`style-pill ${style === 'Modern' ? 'selected' : ''}`}
+              onClick={() => handleStyleChange('Modern')}
             >
-              <input 
-                id="logo-upload-input"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleLogoUpload}
-              />
-              
-              {selectedCompany?.logo ? (
-                <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center overflow-hidden border border-slate-200 rounded">
-                  {renderLogo(selectedCompany.logo)}
-                </div>
-              ) : (
-                <Upload className="mx-auto" />
-              )}
-              <span>Upload PNG/SVG</span>
-            </div>
+              Modern
+            </button>
+            <button 
+              type="button"
+              className={`style-pill ${style === 'Classic' ? 'selected' : ''}`}
+              onClick={() => handleStyleChange('Classic')}
+            >
+              Classic
+            </button>
+            <button 
+              type="button"
+              className={`style-pill ${style === 'Minimal' ? 'selected' : ''}`}
+              onClick={() => handleStyleChange('Minimal')}
+            >
+              Minimal
+            </button>
           </div>
         </div>
 
-        {/* Center Column: Text Area Canvas */}
+        <div className="top-bar-section">
+          <span className="top-bar-label">Branding</span>
+          <div 
+            className="top-bar-logo-upload"
+            onClick={() => document.getElementById('logo-upload-input').click()}
+            title="Upload Company Logo (PNG/SVG)"
+          >
+            <input 
+              id="logo-upload-input"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleLogoUpload}
+            />
+            {selectedCompany?.logo ? (
+              <div className="compact-logo-preview">
+                {renderLogo(selectedCompany.logo)}
+                <span>Change Logo</span>
+              </div>
+            ) : (
+              <div className="compact-logo-preview" style={{ color: 'var(--text-muted)' }}>
+                <Upload size={14} style={{ marginRight: '4px' }} />
+                <span>Upload PNG/SVG</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid Editor Canvas */}
+      <div className="template-grid">
+        
+        {/* Left Column: Text Area Canvas */}
         <div className="editor-canvas">
           {/* Format Toolbar */}
           <div className="editor-toolbar">
@@ -511,8 +526,20 @@ Sincerely,
             <span className="live-preview-badge">Live</span>
           </div>
 
-          <div className="preview-scroller">
-            <div className={`letter-sheet style-${style.toLowerCase()}`}>
+          <div className="preview-scroller" ref={previewContainerRef} style={{ overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '520px', padding: '16px' }}>
+            <div 
+              style={{ 
+                transform: `scale(${scale})`, 
+                transformOrigin: 'top center',
+                width: '610px',
+                height: `${660 * scale}px`,
+                transition: 'transform 0.15s ease-out',
+                display: 'flex',
+                flexDirection: 'column',
+                flexShrink: 0
+              }}
+            >
+              <div className={`letter-sheet style-${style.toLowerCase()}`} style={{ margin: 0 }}>
               {/* Modern Stylesheet preview */}
               {style === 'Modern' && (
                 <>
@@ -639,6 +666,7 @@ Sincerely,
               )}
             </div>
           </div>
+        </div>
 
           {/* Preview Warning Banner */}
           <div className="info-banner" style={{ padding: '12px 14px' }}>

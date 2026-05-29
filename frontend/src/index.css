@@ -1170,23 +1170,108 @@ h1, h2, h3, h4, h5, h6 {
 
 .template-grid {
   display: grid;
-  grid-template-columns: 240px minmax(540px, 1fr) minmax(360px, 1fr);
+  grid-template-columns: 1.15fr 0.85fr;
   gap: 24px;
   flex: 1;
   align-items: start;
   min-height: 0;
-  overflow-x: auto;
   padding-bottom: 12px;
 }
 
-.template-sidebar {
+@media (max-width: 1024px) {
+  .template-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.editor-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 20px;
+  padding: 14px 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.top-bar-section {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-bar-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.style-pills {
+  display: flex;
+  gap: 8px;
+}
+
+.style-pill {
+  padding: 6px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background-color: var(--bg-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.style-pill:hover {
+  border-color: var(--border-hover);
+  color: var(--text-main);
+  background-color: var(--bg-sidebar);
+}
+
+.style-pill.selected {
+  border-color: var(--primary-color);
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.top-bar-logo-upload {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.top-bar-logo-upload:hover {
+  border-color: var(--primary-color);
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.compact-logo-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compact-logo-preview img, .compact-logo-preview div {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 2px;
 }
 
 .style-card-group {
