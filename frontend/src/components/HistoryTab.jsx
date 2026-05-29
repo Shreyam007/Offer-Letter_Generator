@@ -354,6 +354,11 @@ const HistoryTab = () => {
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <div className="font-semibold text-sm truncate">{cand.name}</div>
                           <div className="text-xs text-slate-400 truncate">{cand.email}</div>
+                          {cand.openedAt && (
+                            <div className="text-xs text-blue-500 mt-1 font-medium">
+                              Opened: {new Date(cand.openedAt).toLocaleString()}
+                            </div>
+                          )}
                           {cand.error && (
                             <div className="text-xs text-red-600 mt-1.5 bg-red-50 p-2 rounded border border-red-100 font-medium">
                               <strong>Error:</strong> {cand.error}
@@ -362,7 +367,12 @@ const HistoryTab = () => {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          {cand.status === 'Sent' ? (
+                          {cand.status === 'Opened' ? (
+                            <span className="text-blue-600 flex items-center gap-1 text-xs font-bold bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full" title={cand.openedAt ? `Opened at: ${new Date(cand.openedAt).toLocaleString()}` : ''}>
+                              <Eye size={12} />
+                              <span>Opened</span>
+                            </span>
+                          ) : cand.status === 'Sent' ? (
                             <span className="text-emerald-600 flex items-center gap-1 text-xs font-bold bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
                               <CheckCircle2 size={12} />
                               <span>Sent</span>

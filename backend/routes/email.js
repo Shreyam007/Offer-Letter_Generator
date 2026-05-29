@@ -415,6 +415,13 @@ router.post('/send-campaign', async (req, res) => {
           `;
         }
 
+        const trackingPixelUrl = `${req.protocol}://${req.get('host')}/api/email/track/${candidate._id}.gif`;
+        if (htmlEmail.includes('</body>')) {
+          htmlEmail = htmlEmail.replace('</body>', `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;" alt="" />\n</body>`);
+        } else {
+          htmlEmail += `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;" alt="" />`;
+        }
+
         try {
           const senderEmailCandidates = [company.smtp?.from, process.env.SMTP_FROM, company.email, process.env.SMTP_USER];
           const senderEmail = senderEmailCandidates.find(email => typeof email === 'string' && email.includes('@'));
@@ -466,6 +473,52 @@ router.post('/send-campaign', async (req, res) => {
     if (!isOffline) await campaign.save();
     console.log(`Campaign ${campaign.name} dispatch completed!`);
   })();
+});
+
+// Serve a 1x1 transparent tracking GIF and update candidate status to 'Opened'
+router.get('/track/:candidateId.gif', async (req, res) => {
+  const { candidateId } = req.params;
+  console.log(`Tracking pixel requested for candidate: ${candidateId}`);
+  
+  try {
+    const isOffline = mongoose.connection.readyState !== 1;
+    
+    if (isOffline) {
+      const candidate = inMemoryCandidates.find(c => c._id === candidateId);
+      if (candidate) {
+        candidate.status = 'Opened';
+        candidate.openedAt = new Date();
+        console.log(`[Offline] Candidate ${candidate.name} (${candidate.email}) status updated to Opened`);
+      }
+    } else {
+      if (mongoose.Types.ObjectId.isValid(candidateId)) {
+        const candidate = await Candidate.findById(candidateId);
+        if (candidate) {
+          candidate.status = 'Opened';
+          candidate.openedAt = new Date();
+          await candidate.save();
+          console.log(`[DB] Candidate ${candidate.name} (${candidate.email}) status updated to Opened`);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error updating candidate open status:', error);
+  }
+
+  // 1x1 pixel transparent GIF
+  const trackingPixel = Buffer.from(
+    'R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==',
+    'base64'
+  );
+  
+  res.writeHead(200, {
+    'Content-Type': 'image/gif',
+    'Content-Length': trackingPixel.length,
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  });
+  res.end(trackingPixel);
 });
 
 export default router;

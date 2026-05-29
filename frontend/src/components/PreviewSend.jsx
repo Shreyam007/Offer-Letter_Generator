@@ -10,7 +10,8 @@ import {
   XCircle, 
   Clock, 
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  Eye
 } from 'lucide-react';
 
 const PreviewSend = () => {
@@ -82,7 +83,7 @@ const PreviewSend = () => {
           prevStatusesRef.current[cand._id] = cand.status;
         });
 
-        const allDone = targetCandidates.every(c => ['Sent', 'Failed'].includes(c.status));
+        const allDone = targetCandidates.every(c => ['Sent', 'Failed', 'Opened'].includes(c.status));
         
         if (allDone) {
           setSending(false);
@@ -238,7 +239,7 @@ const PreviewSend = () => {
   };
 
   // Send Progress Metrics
-  const sentCount = selectedCandidates.filter(c => c.status === 'Sent').length;
+  const sentCount = selectedCandidates.filter(c => ['Sent', 'Opened'].includes(c.status)).length;
   const failedCount = selectedCandidates.filter(c => c.status === 'Failed').length;
   const inProgressCount = selectedCandidates.filter(c => ['Sending', 'Retrying'].includes(c.status)).length;
   
@@ -570,6 +571,12 @@ const PreviewSend = () => {
                     </div>
 
                     <div>
+                      {c.status === 'Opened' && (
+                        <span className="text-blue-600 flex items-center gap-1 font-bold">
+                          <Eye size={12} />
+                          <span>Opened</span>
+                        </span>
+                      )}
                       {c.status === 'Sent' && (
                         <span className="text-emerald-600 flex items-center gap-1 font-bold">
                           <CheckCircle2 size={12} />

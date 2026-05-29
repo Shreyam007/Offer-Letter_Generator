@@ -1,9 +1,9 @@
 import React from 'react';
-import { Bell, HelpCircle } from 'lucide-react';
+import { Bell, HelpCircle, Sun, Moon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const Header = ({ activeTab, setActiveTab }) => {
-  const { setStep } = useApp();
+  const { setStep, theme, toggleTheme } = useApp();
 
   const handleTabClick = (tabName) => {
     setActiveTab(tabName);
@@ -52,8 +52,28 @@ const Header = ({ activeTab, setActiveTab }) => {
       </div>
 
       <div className="header-right">
+        <button
+          className="header-icon-btn theme-toggle-btn"
+          onClick={toggleTheme}
+          title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          style={{
+            marginRight: '8px',
+            border: '1px solid var(--border-color)',
+            backgroundColor: 'var(--bg-card)',
+            color: 'var(--text-main)',
+            cursor: 'pointer',
+            padding: '8px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+        </button>
         {/* Admin Badge Profile Widget */}
-        <div className="user-profile-widget" style={{ padding: '8px 16px', backgroundColor: '#f1f5f9', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
+        <div className="user-profile-widget" style={{ padding: '8px 16px', backgroundColor: 'var(--border-color)', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>Admin</span>
         </div>
       </div>

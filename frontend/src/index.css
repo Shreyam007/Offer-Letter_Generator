@@ -37,6 +37,38 @@
   --radius-xl: 24px;
 }
 
+body.dark-mode {
+  --primary-color: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-light: #1e293b;
+  --accent-color: #60a5fa;
+  --bg-app: #0f172a;
+  --bg-sidebar: #1e293b;
+  --bg-card: #1e293b;
+  --border-color: #334155;
+  --border-hover: #475569;
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1;
+  --text-light: #94a3b8;
+  
+  --success-bg: #064e3b;
+  --success-color: #34d399;
+  --success-border: #047857;
+  
+  --danger-bg: #7f1d1d;
+  --danger-color: #f87171;
+  --danger-border: #b91c1c;
+
+  --warning-bg: #78350f;
+  --warning-color: #fbbf24;
+  --warning-border: #d97706;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 10px 10px -5px rgba(0, 0, 0, 0.6);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -2270,3 +2302,90 @@ input:checked + .slider:before {
 .gap-3 { gap: 12px !important; }
 .gap-4 { gap: 16px !important; }
 .gap-6 { gap: 24px !important; }
+
+/* Dark Mode Component Overrides */
+body.dark-mode .bg-white {
+  background-color: var(--bg-card) !important;
+}
+body.dark-mode .bg-slate-50 {
+  background-color: var(--primary-light) !important;
+}
+body.dark-mode .bg-slate-100 {
+  background-color: var(--border-color) !important;
+}
+body.dark-mode .bg-slate-200 {
+  background-color: var(--border-hover) !important;
+}
+body.dark-mode .hover\:bg-slate-50:hover {
+  background-color: var(--primary-light) !important;
+}
+body.dark-mode .hover\:bg-slate-100:hover {
+  background-color: var(--border-color) !important;
+}
+body.dark-mode .text-slate-900,
+body.dark-mode .text-slate-800,
+body.dark-mode .text-slate-700 {
+  color: var(--text-main) !important;
+}
+body.dark-mode .text-slate-600,
+body.dark-mode .text-slate-500 {
+  color: var(--text-muted) !important;
+}
+body.dark-mode .text-slate-400,
+body.dark-mode .text-slate-300 {
+  color: var(--text-light) !important;
+}
+body.dark-mode .border-slate-100,
+body.dark-mode .border-slate-200 {
+  border-color: var(--border-color) !important;
+}
+body.dark-mode .header-icon-btn:hover {
+  background-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+body.dark-mode .nav-item:hover {
+  background-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+body.dark-mode .company-logo-avatar {
+  background-color: var(--border-color) !important;
+}
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+  background-color: var(--bg-app) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: var(--text-light) !important;
+  opacity: 0.7;
+}
+body.dark-mode table,
+body.dark-mode th,
+body.dark-mode td {
+  border-color: var(--border-color) !important;
+}
+body.dark-mode th {
+  background-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+body.dark-mode tr:hover td {
+  background-color: var(--primary-light) !important;
+}
+body.dark-mode .react-flow__node {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+body.dark-mode .modal-overlay,
+body.dark-mode .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+}
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}

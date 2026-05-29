@@ -23,6 +23,21 @@ export const AppProvider = ({ children }) => {
   const [step, setStep] = useState(1);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [theme]);
 
   // Fetch initial data on load
   useEffect(() => {
@@ -393,7 +408,9 @@ export const AppProvider = ({ children }) => {
         testSmtp,
         triggerEmailDispatch,
         loadCampaigns,
-        loading
+        loading,
+        theme,
+        toggleTheme
       }}
     >
       {children}
