@@ -1165,24 +1165,24 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0;
-  height: calc(100vh - 118px);
-  overflow: hidden;
+  min-height: 100%;
 }
 
 .template-grid {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   gap: 24px;
-  flex: 1;
   align-items: stretch;
-  min-height: 0;
+  min-height: 650px;
+  height: calc(100vh - 280px);
   padding-bottom: 12px;
 }
 
 @media (max-width: 1024px) {
   .template-grid {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: 0;
   }
 }
 
@@ -1263,17 +1263,45 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--primary-color);
 }
 
+/* Logo Wrapper Styles */
+.logo-svg-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-svg-wrapper svg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.logo-img-wrapper {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .compact-logo-preview {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.compact-logo-preview img, .compact-logo-preview div {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  border-radius: 2px;
+.compact-logo-preview .logo-svg-wrapper,
+.compact-logo-preview .logo-img-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  padding: 2px;
+  flex-shrink: 0;
 }
 
 .style-card-group {
@@ -1569,11 +1597,13 @@ h1, h2, h3, h4, h5, h6 {
   flex-shrink: 0;
 }
 
-.letter-logo-box svg, .letter-logo-box img {
+.letter-logo-box .logo-svg-wrapper,
+.letter-logo-box .logo-img-wrapper,
+.letter-logo-box svg,
+.letter-logo-box img {
   height: 100%;
   width: auto;
   max-width: 90px;
-  object-fit: contain;
 }
 
 /* Modern Style */
