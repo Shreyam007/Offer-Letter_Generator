@@ -87,12 +87,18 @@ Sincerely,
     const resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
         const containerWidth = entry.contentRect.width;
-        const targetWidth = containerWidth - 32; // subtract padding
-        if (targetWidth < 610) {
-          setScale(targetWidth / 610);
-        } else {
-          setScale(1);
-        }
+        const containerHeight = entry.contentRect.height || 520;
+        
+        // Standard A4-proportioned dimensions for the preview sheet
+        const sheetWidth = 610;
+        const sheetHeight = 780;
+        
+        const scaleX = (containerWidth - 32) / sheetWidth;
+        const scaleY = (containerHeight - 32) / sheetHeight;
+        
+        // Fit within both width and height boundaries
+        const newScale = Math.min(scaleX, scaleY, 1);
+        setScale(newScale);
       }
     });
 
@@ -526,20 +532,23 @@ Sincerely,
             <span className="live-preview-badge">Live</span>
           </div>
 
-          <div className="preview-scroller" ref={previewContainerRef} style={{ overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '520px', padding: '16px' }}>
+          <div className="preview-scroller" ref={previewContainerRef} style={{ overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', minHeight: '520px', padding: '16px' }}>
             <div 
               style={{ 
-                transform: `scale(${scale})`, 
+                position: 'absolute',
+                top: '16px',
+                left: '50%',
+                transform: `translate(-50%, 0) scale(${scale})`, 
                 transformOrigin: 'top center',
                 width: '610px',
-                height: `${660 * scale}px`,
+                height: '780px',
                 transition: 'transform 0.15s ease-out',
                 display: 'flex',
                 flexDirection: 'column',
                 flexShrink: 0
               }}
             >
-              <div className={`letter-sheet style-${style.toLowerCase()}`} style={{ margin: 0 }}>
+              <div className={`letter-sheet style-${style.toLowerCase()}`} style={{ margin: 0, height: '100%', minHeight: 'auto' }}>
               {/* Modern Stylesheet preview */}
               {style === 'Modern' && (
                 <>
