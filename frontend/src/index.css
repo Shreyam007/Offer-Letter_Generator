@@ -1166,6 +1166,8 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  height: calc(100vh - 118px);
+  overflow: hidden;
 }
 
 .template-grid {
