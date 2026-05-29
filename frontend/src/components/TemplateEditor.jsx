@@ -87,17 +87,22 @@ Sincerely,
     const resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
         const containerWidth = entry.contentRect.width;
-        const containerHeight = entry.contentRect.height || 520;
+        const containerHeight = entry.contentRect.height;
+        
+        // Ensure we have valid dimensions
+        if (!containerWidth || !containerHeight) continue;
         
         // Standard A4-proportioned dimensions for the preview sheet
         const sheetWidth = 610;
         const sheetHeight = 780;
         
-        const scaleX = (containerWidth - 32) / sheetWidth;
-        const scaleY = (containerHeight - 32) / sheetHeight;
+        // We want a safe margin of 12px on all sides of the sheet (24px total)
+        const margin = 24;
+        const scaleX = (containerWidth - margin) / sheetWidth;
+        const scaleY = (containerHeight - margin) / sheetHeight;
         
-        // Fit within both width and height boundaries
-        const newScale = Math.min(scaleX, scaleY, 1);
+        // Fit within both width and height boundaries, with a minimum scale of 0.3 and maximum of 1
+        const newScale = Math.max(0.3, Math.min(scaleX, scaleY, 1));
         setScale(newScale);
       }
     });
@@ -676,16 +681,14 @@ Sincerely,
             </div>
           </div>
         </div>
+      </div>
 
-          {/* Preview Warning Banner */}
-          <div className="info-banner" style={{ padding: '12px 14px' }}>
-            <div className="info-banner-left" style={{ fontSize: '12px' }}>
-              <Info size={16} />
-              <span>Templates use <strong>Inter</strong> font by default to guarantee clear digital rendering.</span>
-            </div>
-          </div>
+      {/* Preview Warning Banner */}
+      <div className="info-banner" style={{ padding: '12px 14px', marginTop: '16px' }}>
+        <div className="info-banner-left" style={{ fontSize: '12px' }}>
+          <Info size={16} />
+          <span>Templates use <strong>Inter</strong> font by default to guarantee clear digital rendering.</span>
         </div>
-
       </div>
 
     </div>

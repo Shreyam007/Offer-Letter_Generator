@@ -1170,10 +1170,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .template-grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: 1.2fr 0.8fr;
   gap: 24px;
   flex: 1;
-  align-items: start;
+  align-items: stretch;
   min-height: 0;
   padding-bottom: 12px;
 }
