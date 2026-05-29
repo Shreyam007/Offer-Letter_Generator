@@ -2514,3 +2514,83 @@ body.dark-mode .status-badge.opened {
   background-color: rgba(99, 102, 241, 0.15) !important;
   color: #818cf8 !important;
 }
+
+/* Color Utility Classes */
+.text-red-600 { color: #dc2626 !important; }
+.text-red-500 { color: #ef4444 !important; }
+.text-emerald-600 { color: #059669 !important; }
+.text-emerald-500 { color: #10b981 !important; }
+.text-blue-500 { color: #3b82f6 !important; }
+.text-amber-500 { color: #d97706 !important; }
+.text-pink-600 { color: #db2777 !important; }
+.text-emerald-800 { color: #065f46 !important; }
+.text-red-800 { color: #991b1b !important; }
+
+.bg-blue-50 { background-color: #eff6ff !important; }
+.border-blue-100 { border-color: #dbeafe !important; }
+.bg-emerald-50 { background-color: #ecfdf5 !important; }
+.border-emerald-100 { border-color: #d1fae5 !important; }
+.border-emerald-200 { border-color: #a7f3d0 !important; }
+.bg-pink-50 { background-color: #fdf2f8 !important; }
+.border-pink-100 { border-color: #fce7f3 !important; }
+.bg-red-50 { background-color: #fef2f2 !important; }
+.border-red-100 { border-color: #fee2e2 !important; }
+.border-red-200 { border-color: #fca5a5 !important; }
+
+/* Dark Mode Overrides for Color Utilities */
+body.dark-mode .text-red-600,
+body.dark-mode .text-red-500,
+body.dark-mode .text-pink-600,
+body.dark-mode .text-red-800 {
+  color: #f87171 !important;
+}
+body.dark-mode .text-emerald-600,
+body.dark-mode .text-emerald-500,
+body.dark-mode .text-emerald-800 {
+  color: #34d399 !important;
+}
+body.dark-mode .text-blue-500 {
+  color: #60a5fa !important;
+}
+body.dark-mode .text-amber-500 {
+  color: #fbbf24 !important;
+}
+
+body.dark-mode .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+body.dark-mode .border-blue-100 {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+body.dark-mode .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+body.dark-mode .border-emerald-100,
+body.dark-mode .border-emerald-200 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+body.dark-mode .bg-pink-50 {
+  background-color: rgba(236, 72, 153, 0.15) !important;
+}
+body.dark-mode .border-pink-100 {
+  border-color: rgba(236, 72, 153, 0.3) !important;
+}
+body.dark-mode .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+body.dark-mode .border-red-100,
+body.dark-mode .border-red-200 {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Stat Box Dark Mode Overrides */
+body.dark-mode .stat-box {
+  background-color: var(--bg-card) !important;
+  border-left-color: var(--border-color) !important;
+}
+body.dark-mode .stat-box.success {
+  border-left-color: var(--success-color) !important;
+}
+body.dark-mode .stat-box.danger {
+  border-left-color: var(--danger-color) !important;
+}
