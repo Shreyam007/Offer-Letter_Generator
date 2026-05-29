@@ -9,10 +9,11 @@ const candidateSchema = mongoose.Schema(
     department: { type: String, default: '' },
     salary: { type: String, default: '' },
     joiningDate: { type: String, default: '' },
-    status: { 
-      type: String, 
-      enum: ['Pending', 'Validated', 'Invalid Email', 'Sending', 'Sent', 'Failed', 'Retrying'], 
-      default: 'Pending' 
+    openedAt: { type: Date, default: null },
+    status: {
+      type: String,
+      enum: ['Pending', 'Validated', 'Invalid Email', 'Sending', 'Sent', 'Failed', 'Retrying', 'Opened'],
+      default: 'Pending'
     },
     error: { type: String, default: '' },
     customFields: { type: Map, of: String, default: {} } // For any other CSV columns

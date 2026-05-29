@@ -25,10 +25,10 @@ const filterInMemoryCandidates = (predicate) => {
 const populateCampaign = (camp) => {
   const targetCompanyId = typeof camp.companyId === 'object' ? camp.companyId._id : camp.companyId;
   const targetTemplateId = typeof camp.templateId === 'object' ? camp.templateId._id : camp.templateId;
-  
+
   const comp = inMemoryCompanies.find(c => c._id === targetCompanyId);
   const temp = inMemoryTemplates.find(t => t._id === targetTemplateId);
-  
+
   return { ...camp, companyId: comp || camp.companyId, templateId: temp || camp.templateId };
 };
 
@@ -220,7 +220,7 @@ router.post('/:id/candidates', async (req, res) => {
         const email = emailVal;
         const role = c.Role || c.role || '';
         const department = c.Organization || c.department || '';
-        const salary = ''; 
+        const salary = '';
         const joiningDate = c['Start Date'] || c.joiningDate || '';
 
         const customFields = {};
