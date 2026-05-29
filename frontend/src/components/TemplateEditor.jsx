@@ -682,6 +682,7 @@ Sincerely,
           </div>
         </div>
       </div>
+    </div>
 
       {/* Preview Warning Banner */}
       <div className="info-banner" style={{ padding: '12px 14px', marginTop: '16px' }}>
