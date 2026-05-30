@@ -469,8 +469,10 @@ router.post('/send-campaign', async (req, res) => {
           `;
         }
 
-        const protocol = (req.get('host').includes('localhost') || req.get('host').includes('127.0.0.1')) ? 'http' : 'https';
-        const trackingPixelUrl = `${protocol}://${req.get('host')}/api/email/track/${candidate._id}.gif`;
+        const isLocal = req.get('host').includes('localhost') || req.get('host').includes('127.0.0.1');
+        const protocol = isLocal ? 'http' : 'https';
+        const trackingHost = isLocal ? req.get('host') : 'offer-letter-generator-whu4.onrender.com';
+        const trackingPixelUrl = `${protocol}://${trackingHost}/api/email/track/${candidate._id}.gif`;
         const pixelHtml = `<img src="${trackingPixelUrl}" width="1" height="1" border="0" style="margin:0; padding:0; border:none; display:block;" alt="" />`;
         if (htmlEmail.includes('</body>')) {
           htmlEmail = htmlEmail.replace('</body>', `${pixelHtml}\n</body>`);
