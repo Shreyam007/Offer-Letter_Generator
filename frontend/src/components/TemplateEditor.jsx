@@ -21,6 +21,7 @@ const TemplateEditor = () => {
     templates, 
     saveTemplate, 
     candidates,
+    selectedCandidateIds,
     setStep 
   } = useApp();
 
@@ -236,15 +237,16 @@ Sincerely,
   const compileText = (text) => {
     if (!text) return '';
     
-    // Choose a dummy candidate or fallback mockup data
-    const candidate = candidates.length > 0 ? candidates[0] : {
+    // Choose the first selected candidate or fallback to the first candidate, or mockup data
+    const firstSelected = candidates.find(c => selectedCandidateIds?.includes(c._id));
+    const candidate = firstSelected || (candidates.length > 0 ? candidates[0] : {
       name: 'John Doe',
       role: 'Senior Product Designer',
       department: 'Product',
       salary: '$120,000',
       joiningDate: 'Oct 12, 2023',
       customFields: {}
-    };
+    });
 
     const vars = {
       Name: candidate.name,
