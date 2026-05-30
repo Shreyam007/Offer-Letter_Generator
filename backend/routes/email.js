@@ -474,10 +474,18 @@ router.post('/send-campaign', async (req, res) => {
         const trackingHost = isLocal ? req.get('host') : 'offer-letter-generator-whu4.onrender.com';
         const trackingPixelUrl = `${protocol}://${trackingHost}/api/email/track/${candidate._id}.gif`;
         const pixelHtml = `<img src="${trackingPixelUrl}" width="1" height="1" border="0" style="margin:0; padding:0; border:none; display:block;" alt="" />`;
-        if (htmlEmail.includes('</body>')) {
-          htmlEmail = htmlEmail.replace('</body>', `${pixelHtml}\n</body>`);
+        if (htmlEmail.includes('<body>')) {
+          htmlEmail = htmlEmail.replace('<body>', `<body>\n${pixelHtml}`);
+        } else if (htmlEmail.includes('<body')) {
+          const bodyIndex = htmlEmail.indexOf('<body');
+          const closingTagIndex = htmlEmail.indexOf('>', bodyIndex);
+          if (closingTagIndex !== -1) {
+            htmlEmail = htmlEmail.slice(0, closingTagIndex + 1) + `\n${pixelHtml}` + htmlEmail.slice(closingTagIndex + 1);
+          } else {
+            htmlEmail = pixelHtml + htmlEmail;
+          }
         } else {
-          htmlEmail += pixelHtml;
+          htmlEmail = pixelHtml + htmlEmail;
         }
 
         try {
