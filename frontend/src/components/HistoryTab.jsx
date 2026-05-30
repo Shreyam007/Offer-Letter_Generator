@@ -41,13 +41,37 @@ const HistoryTab = () => {
     }
   };
 
-  // Real-time automatic polling when candidate details log drawer is open
+  // Real-time automatic polling and Server-Sent Events when candidate details log drawer is open
   useEffect(() => {
     if (!drawerOpen || !selectedCampaign) return;
 
+    // 1. Establish SSE connection for instant real-time updates
+    const eventSource = new EventSource(`${API_BASE}/email/track/events`);
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const updatedCandidate = JSON.parse(event.data);
+        console.log("[SSE] Received candidate status update:", updatedCandidate);
+        
+        // Instantly update the candidate in the local state
+        setCampaignCandidates(prev => prev.map(c => 
+          c._id === updatedCandidate.candidateId 
+            ? { ...c, status: updatedCandidate.status, openedAt: updatedCandidate.openedAt }
+            : c
+        ));
+      } catch (err) {
+        console.error("[SSE] Error parsing SSE event:", err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.log("[SSE] EventSource connection closed or failed. Polling fallback remains active.");
+    };
+
+    // 2. Set up fallback polling with cache-busting to bypass any intermediary caching
     const pollInterval = setInterval(async () => {
       try {
-        const res = await fetch(`${API_BASE}/campaigns/${selectedCampaign._id}/candidates`);
+        const res = await fetch(`${API_BASE}/campaigns/${selectedCampaign._id}/candidates?t=${Date.now()}`);
         const data = await res.json();
         if (Array.isArray(data)) {
           setCampaignCandidates(data);
@@ -55,9 +79,12 @@ const HistoryTab = () => {
       } catch (err) {
         console.error("Error polling candidates:", err);
       }
-    }, 3000); // Poll every 3 seconds to show real-time changes
+    }, 3000); // Poll every 3 seconds as a safety fallback
 
-    return () => clearInterval(pollInterval);
+    return () => {
+      eventSource.close();
+      clearInterval(pollInterval);
+    };
   }, [drawerOpen, selectedCampaign]);
 
   const handleCloseDrawer = () => {

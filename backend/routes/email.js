@@ -534,6 +534,45 @@ router.post('/send-campaign', async (req, res) => {
   })();
 });
 
+// Active SSE clients for real-time open notifications
+let sseClients = [];
+
+// Helper function to broadcast open events
+const notifyClientsOfOpen = (candidateId, status, openedAt) => {
+  const data = JSON.stringify({ candidateId, status, openedAt });
+  sseClients.forEach(client => {
+    try {
+      client.write(`data: ${data}\n\n`);
+    } catch (err) {
+      console.error('[SSE] Error writing to client:', err);
+    }
+  });
+};
+
+// SSE stream endpoint
+router.get('/track/events', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*'
+  });
+
+  sseClients.push(res);
+  console.log(`[SSE] Client connected. Total clients: ${sseClients.length}`);
+
+  // Heartbeat to keep connection alive
+  const heartbeat = setInterval(() => {
+    res.write(': heartbeat\n\n');
+  }, 15000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    sseClients = sseClients.filter(client => client !== res);
+    console.log(`[SSE] Client disconnected. Total clients: ${sseClients.length}`);
+  });
+});
+
 // Serve a 1x1 transparent tracking GIF and update candidate status to 'Opened'
 router.get('/track/:candidateId.gif', async (req, res) => {
   const { candidateId } = req.params;
@@ -548,6 +587,7 @@ router.get('/track/:candidateId.gif', async (req, res) => {
         candidate.status = 'Opened';
         candidate.openedAt = new Date();
         console.log(`[Offline] Candidate ${candidate.name} (${candidate.email}) status updated to Opened`);
+        notifyClientsOfOpen(candidateId, 'Opened', candidate.openedAt);
       }
     } else {
       if (mongoose.Types.ObjectId.isValid(candidateId)) {
@@ -557,6 +597,7 @@ router.get('/track/:candidateId.gif', async (req, res) => {
           candidate.openedAt = new Date();
           await candidate.save();
           console.log(`[DB] Candidate ${candidate.name} (${candidate.email}) status updated to Opened`);
+          notifyClientsOfOpen(candidate._id.toString(), 'Opened', candidate.openedAt);
         }
       }
     }
