@@ -469,7 +469,8 @@ router.post('/send-campaign', async (req, res) => {
           `;
         }
 
-        const trackingPixelUrl = `${req.protocol}://${req.get('host')}/api/email/track/${candidate._id}.gif`;
+        const protocol = (req.get('host').includes('localhost') || req.get('host').includes('127.0.0.1')) ? 'http' : 'https';
+        const trackingPixelUrl = `${protocol}://${req.get('host')}/api/email/track/${candidate._id}.gif`;
         if (htmlEmail.includes('</body>')) {
           htmlEmail = htmlEmail.replace('</body>', `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;" alt="" />\n</body>`);
         } else {

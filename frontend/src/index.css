@@ -2626,3 +2626,19 @@ body.dark-mode .stat-box.success {
 body.dark-mode .stat-box.danger {
   border-left-color: var(--danger-color) !important;
 }
+
+/* Info Banner Dark Mode Overrides */
+body.dark-mode .info-banner {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+}
+
+body.dark-mode .info-banner-left,
+body.dark-mode .info-banner-left span,
+body.dark-mode .info-banner-left strong {
+  color: #93c5fd !important;
+}
+
+body.dark-mode .info-banner-left svg {
+  color: #60a5fa !important;
+}
