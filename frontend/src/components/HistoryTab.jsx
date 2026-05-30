@@ -41,6 +41,25 @@ const HistoryTab = () => {
     }
   };
 
+  // Real-time automatic polling when candidate details log drawer is open
+  useEffect(() => {
+    if (!drawerOpen || !selectedCampaign) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_BASE}/campaigns/${selectedCampaign._id}/candidates`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setCampaignCandidates(data);
+        }
+      } catch (err) {
+        console.error("Error polling candidates:", err);
+      }
+    }, 3000); // Poll every 3 seconds to show real-time changes
+
+    return () => clearInterval(pollInterval);
+  }, [drawerOpen, selectedCampaign]);
+
   const handleCloseDrawer = () => {
     setDrawerOpen(false);
     setSelectedCampaign(null);
