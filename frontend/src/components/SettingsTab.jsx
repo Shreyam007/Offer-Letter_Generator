@@ -198,9 +198,9 @@ const SettingsTab = () => {
   const renderLogo = (logoStr) => {
     if (!logoStr) return <Building2 size={24} className="text-slate-400" />;
     if (logoStr.trim().startsWith('<svg')) {
-      return <div dangerouslySetInnerHTML={{ __html: logoStr }} className="w-full h-full" />;
+      return <div dangerouslySetInnerHTML={{ __html: logoStr }} className="logo-svg-wrapper" />;
     }
-    return <img src={logoStr} alt="Company Logo" className="w-full h-full object-contain" />;
+    return <img src={logoStr} alt="Company Logo" className="logo-img-wrapper" />;
   };
 
   return (

@@ -101,13 +101,31 @@ const verifySmtp = async (smtp) => {
 
 const sendMailViaTransporterOrApi = async (transporter, config, mailOptions) => {
   if (config.host.toLowerCase().includes('resend.com')) {
+    let resendAttachments = undefined;
+    if (mailOptions.attachments && mailOptions.attachments.length > 0) {
+      resendAttachments = mailOptions.attachments.map(att => ({
+        filename: att.filename,
+        content: att.content.toString('base64'),
+        contentId: att.cid
+      }));
+    }
+
+    const payload = {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      text: mailOptions.text,
+      html: mailOptions.html,
+      attachments: resendAttachments
+    };
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${config.pass}`
       },
-      body: JSON.stringify(mailOptions)
+      body: JSON.stringify(payload)
     });
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
@@ -258,8 +276,44 @@ router.post('/send-campaign', async (req, res) => {
         const templateStyle = template ? (template.style || 'Modern') : 'Modern';
         const bodyHtml = mailBody.replace(/\n/g, '<br/>');
         const logoSrc = svgToDataUri(company.logo);
-        const logoHtml = logoSrc ? `<img src="${logoSrc}" style="height: 48px; object-fit: contain; max-width: 150px;" alt="${company.name}" />` : '';
-        const logoBoxHtml = logoHtml ? `<div style="height: 48px;">${logoHtml}</div>` : `<div style="font-size: 24px; font-weight: bold; color: #1e293b;">${company.name}</div>`;
+        let logoHtml = '';
+        let emailAttachments = [];
+
+        // Check if the logo is a PNG/JPEG/GIF data URI (Gmail blocks SVG inline/CID images, so we handle raster formats here)
+        if (logoSrc && logoSrc.startsWith('data:image/') && !logoSrc.startsWith('data:image/svg+xml')) {
+          const match = logoSrc.match(/^data:image\/([^;]+);base64,(.+)$/);
+          if (match) {
+            const ext = match[1]; // e.g. png, jpeg, gif
+            const base64Data = match[2].trim();
+            const logoBuffer = Buffer.from(base64Data, 'base64');
+            const cidName = `company_logo`;
+            
+            emailAttachments.push({
+              filename: `logo.${ext}`,
+              content: logoBuffer,
+              cid: cidName
+            });
+            
+            logoHtml = `<img src="cid:${cidName}" style="height: 48px; object-fit: contain; max-width: 150px;" alt="${company.name}" />`;
+          }
+        } else if (logoSrc && (logoSrc.startsWith('http://') || logoSrc.startsWith('https://'))) {
+          // If it's a web URL, we can use it directly
+          logoHtml = `<img src="${logoSrc}" style="height: 48px; object-fit: contain; max-width: 150px;" alt="${company.name}" />`;
+        }
+
+        // Layout-specific HTML logo configurations
+        // If logoHtml exists, use it. Otherwise, use an elegant text logo fallback for Modern, or render nothing for Classic/Minimal
+        const logoBoxHtmlModern = logoHtml 
+          ? `<div style="height: 48px; display: block;">${logoHtml}</div>`
+          : `<div style="font-size: 22px; font-weight: bold; color: #0b3c95; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 0.5px;">${company.name}</div>`;
+
+        const logoBoxHtmlClassic = logoHtml
+          ? `<div style="height: 48px; display: block; margin: 0 auto 16px auto;">${logoHtml}</div>`
+          : ''; // Empty because company name is rendered right under it in Classic style
+
+        const logoHtmlMinimal = logoHtml
+          ? logoHtml.replace('height: 48px;', 'height: 36px; filter: grayscale(1);')
+          : ''; // Empty because company name is rendered on the right
         
         let htmlEmail = '';
 
@@ -286,7 +340,7 @@ router.post('/send-campaign', async (req, res) => {
             <body>
               <div class="letter-container">
                 <div class="header">
-                  ${logoBoxHtml}
+                  ${logoBoxHtmlClassic}
                   <div class="company-title">${company.name}</div>
                   <div style="font-size: 11px; color: #64748b;">${company.tagline || ''}</div>
                 </div>
@@ -335,7 +389,7 @@ router.post('/send-campaign', async (req, res) => {
             <body>
               <div class="letter-container">
                 <div class="header">
-                  <div style="display: table-cell; vertical-align: middle;">${logoSrc ? `<img src="${logoSrc}" style="height: 36px; object-fit: contain; filter: grayscale(1);" alt="${company.name}" />` : ''}</div>
+                  <div style="display: table-cell; vertical-align: middle;">${logoHtmlMinimal}</div>
                   <div style="display: table-cell; vertical-align: middle; text-align: right; font-size: 12px; font-weight: bold; color: #0f172a;">${company.name}</div>
                 </div>
                 <div class="date-ref">
@@ -384,7 +438,7 @@ router.post('/send-campaign', async (req, res) => {
               <div class="letter-container">
                 <div class="header">
                   <div style="display: table-cell; vertical-align: middle;">
-                    ${logoBoxHtml}
+                    ${logoBoxHtmlModern}
                   </div>
                   <div style="display: table-cell; vertical-align: middle;" class="date-ref">
                     <div>October 24, 2026</div>
@@ -432,7 +486,8 @@ router.post('/send-campaign', async (req, res) => {
             to: candidate.email,
             subject: mailSubject,
             text: mailBody,
-            html: htmlEmail
+            html: htmlEmail,
+            attachments: emailAttachments.length > 0 ? emailAttachments : undefined
           };
 
           await sendMailViaTransporterOrApi(transporter, activeConfig, mailOptions);
