@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OfferFlow HR — Interview Prep & Project Guide</title>
+  <title>OfferFlow HR — Easy Interview Prep Guide</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap');
 
@@ -31,12 +31,12 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 800px;
       margin: 40px auto;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 48px;
+      padding: 40px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     }
 
@@ -47,7 +47,7 @@
     }
 
     h1 {
-      font-size: 2.2rem;
+      font-size: 2rem;
       border-bottom: 2px solid var(--primary-light);
       padding-bottom: 16px;
       margin-top: 0;
@@ -55,21 +55,21 @@
     }
 
     h2 {
-      font-size: 1.6rem;
+      font-size: 1.4rem;
       border-bottom: 1px solid var(--border-color);
       padding-bottom: 8px;
-      margin-top: 40px;
+      margin-top: 32px;
       color: #0f172a;
     }
 
     h3 {
-      font-size: 1.25rem;
-      margin-top: 28px;
+      font-size: 1.15rem;
+      margin-top: 24px;
       color: #1e293b;
     }
 
     p {
-      margin: 12px 0 20px 0;
+      margin: 10px 0 16px 0;
       color: var(--text-main);
     }
 
@@ -79,42 +79,21 @@
       font-weight: 500;
     }
 
-    a:hover {
-      text-decoration: underline;
-    }
-
     code {
       font-family: 'Fira Code', monospace;
       font-size: 0.9em;
       background-color: var(--code-bg);
       padding: 2px 6px;
       border-radius: var(--radius-sm);
-      color: #0f172a;
-    }
-
-    pre {
-      font-family: 'Fira Code', monospace;
-      background-color: #0f172a;
-      color: #f8fafc;
-      padding: 20px;
-      border-radius: var(--radius-md);
-      overflow-x: auto;
-      font-size: 0.9em;
-      margin: 16px 0;
-    }
-
-    pre code {
-      background-color: transparent;
-      padding: 0;
-      color: inherit;
+      color: #0b3c95;
     }
 
     .info-banner {
       background-color: var(--primary-light);
       border-left: 4px solid var(--primary);
-      padding: 16px 20px;
+      padding: 14px 18px;
       border-radius: 0 var(--radius-md) var(--radius-md) 0;
-      margin: 24px 0;
+      margin: 20px 0;
       font-size: 0.95rem;
     }
 
@@ -123,12 +102,12 @@
     }
 
     .file-tree {
-      margin: 20px 0;
+      margin: 16px 0;
       padding-left: 20px;
     }
 
     .file-item {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       padding-left: 10px;
       border-left: 2px solid var(--border-color);
     }
@@ -139,19 +118,19 @@
     }
 
     ul, ol {
-      padding-left: 24px;
-      margin-bottom: 24px;
+      padding-left: 20px;
+      margin-bottom: 20px;
     }
 
     li {
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     blockquote {
       background-color: #f8fafc;
       border-left: 4px solid #cbd5e1;
-      padding: 12px 20px;
-      margin: 20px 0;
+      padding: 12px 18px;
+      margin: 16px 0;
       font-style: italic;
       color: #475569;
     }
@@ -161,16 +140,15 @@
       border: 1px solid #a7f3d0;
       color: #065f46;
       border-radius: var(--radius-md);
-      padding: 16px 20px;
-      margin-bottom: 30px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
       font-size: 0.95rem;
     }
 
-    /* Print styling overrides */
     @media print {
       body {
         background-color: #ffffff;
-        font-size: 11pt;
+        font-size: 10pt;
       }
       .container {
         border: none;
@@ -185,15 +163,6 @@
       h2 {
         page-break-before: always;
       }
-      pre {
-        page-break-inside: avoid;
-        background-color: #f1f5f9;
-        color: #0f172a;
-        border: 1px solid var(--border-color);
-      }
-      code {
-        background-color: #f1f5f9;
-      }
     }
   </style>
 </head>
@@ -201,138 +170,122 @@
 
   <div class="container">
     <div class="print-instructions">
-      <strong>🖨️ PDF Generation Instructions:</strong> Open this file (<code>INTERVIEW_PREP_GUIDE.html</code>) in Google Chrome or Microsoft Edge, press <strong>Ctrl + P</strong> (Windows), change the printer target to <strong>"Save as PDF"</strong>, ensure "Background graphics" is <strong>checked</strong> under Options, and click Save.
+      <strong>🖨️ PDF Instructions:</strong> Open this file in Chrome/Edge, press <strong>Ctrl + P</strong>, change destination to <strong>"Save as PDF"</strong>, ensure "Background graphics" is <strong>checked</strong>, and click Save.
     </div>
 
-    <h1>OfferFlow HR — Interview Prep & Project Guide</h1>
-    <p>A comprehensive, high-impact prep guide to help you explain the architecture, folders, and features of the **OfferFlow HR** bulk mail campaign system. It details file contexts, walkthrough scripts, and troubleshooting explanations for technical rounds.</p>
-
-    <h2>📂 Part 1: Project Architecture Overview</h2>
-    <p><strong>OfferFlow HR</strong> is a bulk offer letter dispatch engine. It connects companies to their candidates by parsing spreadsheet data, letting users review/modify records in an interactive grid, customizing letter templates with rich variables, sending merged PDF/HTML offers through configured SMTP parameters, and tracking email delivery rates and open logs in real-time.</p>
+    <h1>🚀 OfferFlow HR — Short & Easy Interview Prep Guide</h1>
+    <p>This guide is made for you to quickly read, understand, and explain the project in an interview. Everything is written in simple, easy-to-understand language.</p>
     
-    <div class="info-banner">
-      <strong>Core Stack:</strong> MongoDB (Database) | Express.js (REST Routing) | React.js (Component State) | Node.js (Async Execution) | Vanilla CSS (Design system & dark mode variables) | Nodemailer (Email Delivery).
-    </div>
-
-    <h2>📂 Part 2: What Contains What? (Folder Breakdown)</h2>
-    
-    <h3>📁 Backend Directory Structure (<code>/backend</code>)</h3>
-    <div class="file-tree">
-      <div class="file-item">
-        <span class="file-name">server.js</span> — Express bootstrapper. Binds JSON and CORS middlewares, initializes database connectors, and opens the server listener.
-      </div>
-      <div class="file-item">
-        <span class="file-name">config/db.js</span> — Connects Node to the MongoDB database using Mongoose.
-      </div>
-      <div class="file-item">
-        <span class="file-name">config/seed.js</span> — Seeds base templates (Modern, Classic) if the template collection is empty on startup.
-      </div>
-      <div class="file-item">
-        <span class="file-name">models/Company.js</span> — Schema for verified organizations. Stores website address, logos, and encrypted SMTP configurations.
-      </div>
-      <div class="file-item">
-        <span class="file-name">models/Template.js</span> — Schema for letter styles. Details subject, body content with brackets, layout rules, and logo dimensions.
-      </div>
-      <div class="file-item">
-        <span class="file-name">models/Candidate.js</span> — Schema for recipients. Stores name, email, salary, custom CSV data, and dispatch status (Sent, Failed, Opened).
-      </div>
-      <div class="file-item">
-        <span class="file-name">models/Campaign.js</span> — Tracks sending batches. Maps total candidate rows, successful deliveries, and active template IDs.
-      </div>
-      <div class="file-item">
-        <span class="file-name">routes/campaigns.js</span> — Ingestion routing. Performs bulk upsert of CSV rows into candidate models and handles individual candidate record edits.
-      </div>
-      <div class="file-item">
-        <span class="file-name">routes/email.js</span> — Sending loop and diagnostics. Tests SMTP configurations and conducts async batch delivery. Also holds the tracking pixel request handler.
-      </div>
-    </div>
-
-    <h3>📁 Frontend Directory Structure (<code>/frontend</code>)</h3>
-    <div class="file-tree">
-      <div class="file-item">
-        <span class="file-name">App.jsx</span> — Layout framework. Switches screens across navigation tabs (Workflow, Archive, Settings) and sidebar controls.
-      </div>
-      <div class="file-item">
-        <span class="file-name">index.css</span> — Design engine. Contains theme custom properties (Light/Dark variables), layout rules, dynamic print scaling CSS, and custom scrollbars.
-      </div>
-      <div class="file-item">
-        <span class="file-name">context/AppContext.jsx</span> — Global state provider. Shares step progression, active campaign documents, list refreshes, and the theme context.
-      </div>
-      <div class="file-item">
-        <span class="file-name">components/CsvUpload.jsx</span> — Step 1: Upload. Captures candidate spreadsheets, parses headers using PapaParse on the client, and initializes the campaign.
-      </div>
-      <div class="file-item">
-        <span class="file-name">components/DataReview.jsx</span> — Step 2: Review. Visual spreadsheet grid allowing users to filter, search, delete, or edit candidate details inline.
-      </div>
-      <div class="file-item">
-        <span class="file-name">components/TemplateEditor.jsx</span> — Step 3: Edit. WYSIWYG editor supporting Modern, Classic, Minimal styles, variables shortcuts, HTML toggles, and scaled letter sheets preview.
-      </div>
-      <div class="file-item">
-        <span class="file-name">components/PreviewSend.jsx</span> — Step 4: Dispatch. Monitors mail merges, handles interval delay controls, and prints candidate PDFs on the client.
-      </div>
-      <div class="file-item">
-        <span class="file-name">components/HistoryTab.jsx</span> — Analytics logs dashboard showing dispatch outcomes, success rates, open metrics, and detailed audit trails.
-      </div>
-      <div class="file-item">
-        <span class="file-name">components/SettingsTab.jsx</span> — Settings panel for managing SMTP credentials, address credentials, and organization logo uploads.
-      </div>
-    </div>
-
-    <h2>📂 Part 3: Walkthrough Scripts for Key Coding Features</h2>
-
-    <h3>1. Candidate CSV Ingestion</h3>
-    <p><strong>Code location:</strong> <code>frontend/src/components/CsvUpload.jsx</code></p>
-    <blockquote>
-      "Inside CsvUpload.jsx, we parse files on the client side with PapaParse. When parsing completes, we validate mandatory headers (Name, Email, Role, Salary, JoiningDate). If validated, we make a POST request to /api/campaigns, passing company and candidate arrays to create a campaign and bulk-upsert records using MongoDB's insertMany logic."
-    </blockquote>
-
-    <h3>2. Asynchronous Mail Merge sending loop</h3>
-    <p><strong>Code location:</strong> <code>backend/routes/email.js</code> (Inside post route <code>/send-campaign</code>)</p>
-    <blockquote>
-      "In routes/email.js, the dispatch engine retrieves the campaign candidates. For each candidate, it performs a mail merge by replacing curly brace tags like {{Name}} with matching candidate fields. We establish a Nodemailer transporter using the company's decrypted SMTP configuration, loop through the recipients, send the emails, and update their statuses to 'Sent' or 'Failed' dynamically."
-    </blockquote>
-
-    <h3>3. Real-Time Email Open Tracking (1x1 Transparent Pixel)</h3>
-    <p><strong>Code location:</strong> <code>backend/routes/email.js</code> (Tracking endpoint & Pixel injection)</p>
-    <blockquote>
-      "To track email opens, we append an image pixel tag: <code>&lt;img src="http://[host]/api/email/track/:candidateId.gif" width="1" height="1" /&gt;</code> to the bottom of the mail HTML. When the recipient opens the mail, the client requests the GIF. Our tracking endpoint updates the candidate model status to 'Opened' and registers the timestamp, then serves a raw transparent GIF buffer with Cache-Control headers set to prevent caching."
-    </blockquote>
-
-    <h3>4. Client-side PDF Generation</h3>
-    <p><strong>Code location:</strong> <code>frontend/src/components/PreviewSend.jsx</code></p>
-    <blockquote>
-      "We generate candidate PDFs directly on the client side using window.print() inside a sandboxed print frame. When a user clicks 'Download PDF', we isolate the rendered letter sheet element and trigger the print engine. This reduces CPU and memory overhead on our Node server."
-    </blockquote>
-
-    <h2>📂 Part 4: How to Explain Key Troubleshooting Bug-Fixes</h2>
-
-    <h3>1. Fixing the Non-Scrollable Editor & Cut-off Textarea</h3>
-    <p><strong>The Bug:</strong> The template editor container had a fixed height constraint (<code>calc(100vh - 118px)</code>) and <code>overflow: hidden</code>. On smaller resolutions, this caused the Subject line, textarea editor, and Save buttons to be pushed off-screen and completely clipped without a way to scroll down.</p>
-    <p><strong>How we resolved it:</strong></p>
+    <h2>💡 1. What is this project? (Simple Overview)</h2>
+    <p><strong>OfferFlow HR</strong> is a bulk offer letter generator tool. It helps HR teams send hundreds of personalized offer letters to candidates in one go.</p>
     <ul>
-      <li>We removed the restrictive fixed height and <code>overflow: hidden</code> on the outer container <code>.template-editor-shell</code>, allowing the page viewport to scroll naturally.</li>
-      <li>We configured <code>.template-grid</code> to use a safe <code>min-height: 650px</code> and a dynamic height (<code>height: calc(100vh - 280px)</code>). This guarantees the textarea editing region is always spacious (at least 350px tall), while scaling up beautifully on high-resolution screens.</li>
+      <li><strong>Upload:</strong> HR uploads a CSV list of candidates.</li>
+      <li><strong>Review:</strong> HR reviews, edits, and selects candidates in a spreadsheet grid.</li>
+      <li><strong>Template:</strong> HR writes a letter template using drag-and-drop variables (like <code>{{Name}}</code>, <code>{{Role}}</code>).</li>
+      <li><strong>Send & Track:</strong> The app sends emails to all candidates and tracks in real-time when each candidate opens their mail.</li>
     </ul>
 
-    <h3>2. Constraining Company Branding Logos</h3>
-    <p><strong>The Bug:</strong> When users uploaded large SVG company logos, the lack of sizing bounds in the branding container allowed SVGs to render at their default high resolution. This inflated the style bar card to be massive and pushed the text editor off-screen.</p>
-    <p><strong>How we resolved it:</strong></p>
+    <h2>📂 2. Project Sections — Where is the code?</h2>
+    
+    <h3>📁 Backend (Node.js & Express API)</h3>
+    <div class="file-tree">
+      <div class="file-item">
+        <span class="file-name">server.js</span> — Starts the API, connects to MongoDB, and registers routes.
+      </div>
+      <div class="file-item">
+        <span class="file-name">config/db.js</span> — Connects to MongoDB database.
+      </div>
+      <div class="file-item">
+        <span class="file-name">config/seed.js</span> — Seeds initial demo companies and templates if database is empty.
+      </div>
+      <div class="file-item">
+        <span class="file-name">models/</span> — Database schemas:
+        <ul>
+          <li><code>Company.js</code> — Organization data & SMTP settings.</li>
+          <li><code>Template.js</code> — Letter subject & body text templates.</li>
+          <li><code>Campaign.js</code> — Statistics (Total, Sent, Failed).</li>
+          <li><code>Candidate.js</code> — Recipient details & tracking state.</li>
+        </ul>
+      </div>
+      <div class="file-item">
+        <span class="file-name">routes/campaigns.js</span> — CSV ingestion, candidate CRUD, and inline editing.
+      </div>
+      <div class="file-item">
+        <span class="file-name">routes/email.js</span> — Sending email loop, tracking pixel requests, and SSE push notification events.
+      </div>
+    </div>
+
+    <h3>📁 Frontend (React SPA & CSS)</h3>
+    <div class="file-tree">
+      <div class="file-item">
+        <span class="file-name">App.jsx</span> — Main dashboard page router.
+      </div>
+      <div class="file-item">
+        <span class="file-name">context/AppContext.jsx</span> — Global React state (campaigns, candidate selection, theme status, API endpoints).
+      </div>
+      <div class="file-item">
+        <span class="file-name">index.css</span> — Vanilla CSS style rules & Dark Mode color variables.
+      </div>
+      <div class="file-item">
+        <span class="file-name">components/CsvUpload.jsx</span> — <strong>Step 1 (Upload)</strong>. Parses candidate CSVs client-side using <code>PapaParse</code>.
+      </div>
+      <div class="file-item">
+        <span class="file-name">components/DataReview.jsx</span> — <strong>Step 2 (Review)</strong>. Spreadsheet-like grid to edit details and select candidates.
+      </div>
+      <div class="file-item">
+        <span class="file-name">components/TemplateEditor.jsx</span> — <strong>Step 3 (Edit)</strong>. Write templates and preview them scaled to A4 dimensions.
+      </div>
+      <div class="file-item">
+        <span class="file-name">components/PreviewSend.jsx</span> — <strong>Step 4 (Send)</strong>. Generates PDF downloads and triggers async email sending.
+      </div>
+      <div class="file-item">
+        <span class="file-name">components/HistoryTab.jsx</span> — Shows dispatched campaigns list, stats, and real-time open status drawer.
+      </div>
+      <div class="file-item">
+        <span class="file-name">components/SettingsTab.jsx</span> — Configure company branding and SMTP email servers.
+      </div>
+    </div>
+
+    <h2>🎨 3. Dark Mode (How it works & code locations)</h2>
+    <p><strong>Concept:</strong> Swaps theme variables dynamically without page re-renders.</p>
     <ul>
-      <li>We introduced two target CSS wrappers: <code>.logo-svg-wrapper</code> and <code>.logo-img-wrapper</code>.</li>
-      <li>We modified the <code>renderLogo</code> helper in <code>TemplateEditor.jsx</code> to return these specific classes instead of generic utility tags.</li>
-      <li>In <code>index.css</code>, we bound the wrappers to a maximum of <code>32px</code> by <code>32px</code> inside the Branding toolbar. Now, large vector logos automatically scale down to fit the bar.</li>
+      <li>We store a <code>theme</code> state ('light' or 'dark') in React Context. When toggled, we add/remove the <code>.dark-mode</code> class from the <code>&lt;body&gt;</code> element and save the preference in <code>localStorage</code>.</li>
+      <li>In CSS, we define color tokens (e.g. <code>--bg-app</code>, <code>--bg-card</code>, <code>--text-main</code>) under <code>body</code> and override them under <code>body.dark-mode</code>. The browser swaps colors instantly.</li>
+      <li><strong>Code locations:</strong> React logic is in <code>AppContext.jsx</code>, Toggle button is in <code>Header.jsx</code>, and variables are in <code>index.css</code>.</li>
     </ul>
 
-    <h2>📂 Part 5: Common System Design Questions</h2>
-    
-    <p><strong>Q: Why parse CSV on the client instead of uploading raw files to the backend?</strong><br/>
-    <em>A:</em> Parsing client-side with PapaParse reduces file size payloads and saves server CPU cycles. It also allows us to show an interactive review table immediately (Step 2) so users can correct errors or remove duplicates before any data is sent to the database.</p>
+    <h2>⚡ 4. New Added Features (How they work & code locations)</h2>
 
-    <p><strong>Q: Why serve a 1x1 transparent GIF instead of a PNG for tracking?</strong><br/>
-    <em>A:</em> Transparent GIFs are the smallest possible graphic files (only 43 bytes). They are universally supported by 100% of email clients and prevent layout shifting or visual issues in the candidate's inbox.</p>
+    <h3>A. Real-Time Email Open Tracking (Server-Sent Events)</h3>
+    <p><strong>What it does:</strong> When a candidate opens the email in Gmail, their status updates to "Opened" with a timestamp in your History drawer <strong>instantly</strong> (without refreshing the page).</p>
+    <ul>
+      <li>When Nodemailer sends the email, we inject a tiny, invisible 1x1 transparent tracking pixel image at the top of the email.</li>
+      <li>When the candidate opens the email, their mail app requests this image from the backend.</li>
+      <li>The backend logs the request, updates the database candidate status to "Opened", and serves the 1x1 GIF.</li>
+      <li>At the same time, the backend broadcasts this open event to the frontend via a persistent <strong>Server-Sent Events (SSE)</strong> connection.</li>
+      <li>The frontend's <code>EventSource</code> receives the broadcast and updates the candidate's status badge in the UI instantly.</li>
+      <li><strong>Fallback:</strong> If the SSE stream fails, fallback polling fetches candidates database every 3 seconds with a cache-busting parameter (<code>?t=Date.now()</code>) to bypass network caches.</li>
+      <li><strong>Code locations:</strong> Backend SSE endpoint (<code>/track/events</code>) & tracking pixel router in <code>email.js</code>. Frontend client stream connection in <code>HistoryTab.jsx</code>.</li>
+    </ul>
 
-    <p><strong>Q: Why scale the letter sheet preview using CSS scale transform?</strong><br/>
-    <em>A:</em> A4 proportions (610px by 780px) must remain fixed to guarantee that the preview accurately reflects the printed PDF layout. By utilizing <code>transform: scale(...)</code>, we dynamically scale the preview down to fit smaller display areas without breaking line wraps, headers, or absolute positions inside the CSS template stylesheet.</p>
+    <h3>B. Gmail-Safe Pixel Injection (Anti-Clipping)</h3>
+    <p><strong>What it does:</strong> Fixes the issue where Gmail blocked tracking pixels.</p>
+    <p><strong>How it works:</strong> Gmail clips emails over 102KB (which happens when company logos are embedded as large SVG/base64 strings). If the tracking pixel is at the bottom of the email, Gmail will clip it, and the pixel won't load. We fix this by injecting the pixel immediately after the opening <code>&lt;body&gt;</code> tag at the very top of the email body.</p>
+    <p><strong>Code location:</strong> Injection logic is in <code>email.js</code>.</p>
+
+    <h3>C. Live Selected Candidate Template Preview</h3>
+    <p><strong>What it does:</strong> In Step 3 (Template Editor), the live preview panel on the right displays the exact details (Name, Salary, Role, Date) of the candidate you checked/selected in Step 2.</p>
+    <p><strong>Code location:</strong> Selected candidate lookup in <code>TemplateEditor.jsx</code>.</p>
+
+    <h2>💬 5. Quick Interview Answers</h2>
+    <p><strong>Q: Why use Server-Sent Events (SSE) instead of standard WebSockets?</strong><br/>
+    <em>A:</em> SSE is much simpler and runs over standard HTTP/2, requiring no extra libraries (like Socket.io). It is extremely lightweight for unidirectional real-time updates (server pushing open status updates to client).</p>
+
+    <p><strong>Q: Why do you parse CSV on the client side?</strong><br/>
+    <em>A:</em> Using PapaParse on the frontend offloads computing work from the backend server and allows the browser to validate columns instantly before saving data to MongoDB.</p>
+
+    <p><strong>Q: Why use a 1x1 transparent GIF instead of other formats like PNG?</strong><br/>
+    <em>A:</em> GIFs are the smallest image files possible (only 43 bytes). They are supported by 100% of email clients and don't cause any visual alignment issues.</p>
 
   </div>
 
