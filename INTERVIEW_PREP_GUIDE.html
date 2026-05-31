@@ -257,15 +257,13 @@
     <h2>⚡ 4. New Added Features (How they work & code locations)</h2>
 
     <h3>A. Real-Time Email Open Tracking (Server-Sent Events)</h3>
-    <p><strong>What it does:</strong> When a candidate opens the email in Gmail, their status updates to "Opened" with a timestamp in your History drawer <strong>instantly</strong> (without refreshing the page).</p>
+    <p><strong>What it does:</strong> Changes status to "Opened" instantly when Gmail is opened.</p>
     <ul>
-      <li>When Nodemailer sends the email, we inject a tiny, invisible 1x1 transparent tracking pixel image at the top of the email.</li>
-      <li>When the candidate opens the email, their mail app requests this image from the backend.</li>
-      <li>The backend logs the request, updates the database candidate status to "Opened", and serves the 1x1 GIF.</li>
-      <li>At the same time, the backend broadcasts this open event to the frontend via a persistent <strong>Server-Sent Events (SSE)</strong> connection.</li>
-      <li>The frontend's <code>EventSource</code> receives the broadcast and updates the candidate's status badge in the UI instantly.</li>
-      <li><strong>Fallback:</strong> If the SSE stream fails, fallback polling fetches candidates database every 3 seconds with a cache-busting parameter (<code>?t=Date.now()</code>) to bypass network caches.</li>
-      <li><strong>Code locations:</strong> Backend SSE endpoint (<code>/track/events</code>) & tracking pixel router in <code>email.js</code>. Frontend client stream connection in <code>HistoryTab.jsx</code>.</li>
+      <li>We place an invisible 1x1 image (pixel) at the top of the email body.</li>
+      <li>Opening the email triggers a request for this image from our backend.</li>
+      <li>The backend updates candidate status to "Opened" and broadcasts it to the frontend via a live stream connection (SSE / EventSource).</li>
+      <li><strong>Fallback:</strong> If the live stream drops, the frontend polls the database every 3 seconds with a cache-busting query (<code>?t=Date.now()</code>).</li>
+      <li><strong>Code locations:</strong> Backend router & SSE: <code>email.js</code> (<code>/track/events</code> and <code>/track/:candidateId.gif</code>). Frontend connection: <code>HistoryTab.jsx</code> (lines 44-62).</li>
     </ul>
 
     <h3>B. Gmail-Safe Pixel Injection (Anti-Clipping)</h3>

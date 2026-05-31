@@ -57,17 +57,15 @@ This guide is made for you to quickly read, understand, and explain the project 
 ## ⚡ 4. New Added Features (How they work & code locations)
 
 ### A. Real-Time Email Open Tracking (Server-Sent Events)
-- **What it does**: When a candidate opens the email in Gmail, their status updates to "Opened" with a timestamp in your History drawer **instantly** (without refreshing the page).
+- **What it does**: Changes status to "Opened" instantly when Gmail is opened.
 - **How it works**:
-  1. When Nodemailer sends the email, we inject a tiny, invisible 1x1 transparent tracking pixel image at the top of the email.
-  2. When the candidate opens the email, their mail app requests this image from the backend.
-  3. The backend logs the request, updates the database candidate status to "Opened", and serves the 1x1 GIF.
-  4. At the same time, the backend broadcasts this open event to the frontend via a persistent **Server-Sent Events (SSE)** connection.
-  5. The frontend's `EventSource` receives the broadcast and updates the candidate's status badge in the UI instantly.
-  6. **Fallback**: If the SSE stream fails, fallback polling fetches candidates database every 3 seconds with a cache-busting parameter (`?t=Date.now()`) to bypass network caches.
+  1. We place an invisible 1x1 image (pixel) at the top of the email body.
+  2. Opening the email triggers a request for this image from our backend.
+  3. The backend updates candidate status to "Opened" and broadcasts it to the frontend via a live stream connection (SSE / EventSource).
+  4. **Fallback**: If the live stream drops, the frontend polls the database every 3 seconds with a cache-busting query (`?t=Date.now()`).
 - **Where to find in code**:
-  - Backend SSE endpoint (`/track/events`) & tracking pixel router: [email.js](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/backend/routes/email.js)
-  - Frontend client stream connection: [HistoryTab.jsx:L44-L62](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/components/HistoryTab.jsx#L44-L62)
+  - Backend router & SSE: [email.js](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/backend/routes/email.js) (`/track/events` and `/track/:candidateId.gif`)
+  - Frontend connection: [HistoryTab.jsx:L44-L62](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/components/HistoryTab.jsx#L44-L62)
 
 ### B. Gmail-Safe Pixel Injection (Anti-Clipping)
 - **What it does**: Fixes the issue where Gmail blocked tracking pixels.
