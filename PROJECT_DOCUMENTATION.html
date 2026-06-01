@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OfferFlow HR — Complete Project Documentation & System Manual</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+    :root {
+      --primary: #0b3c95;
+      --primary-light: #f0f6ff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --bg-app: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #cbd5e1;
+      --accent: #2563eb;
+      --code-bg: #f1f5f9;
+      --radius-md: 8px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-app);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 50px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Cover Page styling */
+    .cover-page {
+      text-align: center;
+      padding: 60px 0 100px 0;
+      border-bottom: 2px solid var(--primary-light);
+      margin-bottom: 50px;
+      page-break-after: always;
+    }
+
+    .cover-logo {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 2px;
+      margin: 0;
+    }
+
+    .cover-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      margin-bottom: 40px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .cover-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      color: #0f172a;
+      font-weight: 700;
+      margin: 20px 0;
+    }
+
+    .cover-details {
+      margin-top: 80px;
+      font-size: 1.1rem;
+      line-height: 2;
+    }
+
+    .cover-details strong {
+      color: var(--primary);
+    }
+
+    /* Header elements */
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', sans-serif;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 8px;
+      margin-top: 48px;
+      color: var(--primary);
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin-top: 32px;
+      color: #1e293b;
+    }
+
+    p {
+      margin: 12px 0 20px 0;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9em;
+      background-color: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0b3c95;
+    }
+
+    pre {
+      font-family: 'Fira Code', monospace;
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      font-size: 0.9em;
+      margin: 18px 0;
+    }
+
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    ul, ol {
+      padding-left: 24px;
+      margin-bottom: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .print-instructions {
+      background-color: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 30px;
+      font-size: 0.95rem;
+    }
+
+    @media print {
+      body {
+        background-color: #ffffff;
+        font-size: 10pt;
+      }
+      .container {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        max-width: 100%;
+      }
+      .print-instructions {
+        display: none;
+      }
+      h2 {
+        page-break-before: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="print-instructions">
+      <strong>🖨️ PDF Generation Instructions:</strong> Open this file (<code>PROJECT_DOCUMENTATION.html</code>) in Chrome/Edge, press <strong>Ctrl + P</strong>, change target to <strong>"Save as PDF"</strong>, ensure "Background graphics" is <strong>checked</strong>, and click Save.
+    </div>
+
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+      <h3 class="cover-logo">OFFERFLOW HR</h3>
+      <div class="cover-subtitle">Enterprise Candidate Onboarding & Dispatch Platform</div>
+      <h1 class="cover-title">PROJECT DOCUMENTATION & SYSTEM MANUAL</h1>
+      <p>A comprehensive technical report on the design, architecture, and implementation of a real-time bulk email campaign system.</p>
+      
+      <div class="cover-details">
+        <strong>Developed By:</strong> Shreyam<br/>
+        <strong>OS Version:</strong> Windows 11<br/>
+        <strong>Technology Stack:</strong> MongoDB, Express.js, React.js, Node.js (MERN)<br/>
+        <strong>Date:</strong> June 2026
+      </div>
+    </div>
+
+    <!-- 1. ABSTRACT -->
+    <h2>1. Abstract</h2>
+    <p>
+      <strong>OfferFlow HR</strong> is a web application designed to automate and optimize the candidate onboarding process for HR coordinators. The platform allows organizations to upload candidate data spreadsheets, perform verification and inline edits, dynamically customize layout templates (Modern, Classic, Minimal), and dispatch personalized PDF/HTML offer letters. 
+    </p>
+    <p>
+      Crucially, the system features a <strong>real-time email open tracking engine</strong> that updates candidate statuses to "Opened" with exact timestamps the moment a candidate views their offer in an email client. This platform uses the MERN stack (MongoDB, Express, React, Node.js) and leverages Server-Sent Events (SSE) to deliver updates to the client without page refreshes.
+    </p>
+
+    <!-- 2. INTRODUCTION -->
+    <h2>2. Introduction & Objectives</h2>
+    <p>
+      Traditional candidate onboarding relies on manual letter generation, individual attachment drafting, and lack of delivery status transparency. The objectives of this project are:
+    </p>
+    <ul>
+      <li><strong>Automation:</strong> Automate document merging by mapping spreadsheet data directly into pre-styled templates.</li>
+      <li><strong>Data Integrity:</strong> Implement spreadsheet-like validation on the client browser before uploading to database resources.</li>
+      <li><strong>Real-time Analytics:</strong> Establish a live feedback loop showing email transmission rates, delivery failures, and email opens.</li>
+      <li><strong>Security & Customization:</strong> Support encrypted SMTP parameters for separate company entities while allowing rich WYSIWYG letter customization.</li>
+    </ul>
+
+    <!-- 3. SYSTEM ARCHITECTURE -->
+    <h2>3. System Architecture & Workflow</h2>
+    <p>
+      The application follows a decoupled client-server model:
+    </p>
+    <ol>
+      <li><strong>Frontend Client:</strong> React SPA compiled using Vite. It handles client-side CSV processing with PapaParse, routes step wizards, and opens a Server-Sent Events (SSE) stream connection when viewing analytics.</li>
+      <li><strong>Backend API Server:</strong> Express.js server executing Node.js. It manages REST endpoints, initiates the Nodemailer mailing loops, generates in-memory buffers, and serves the tracking pixel.</li>
+      <li><strong>Cloud Database:</strong> MongoDB Atlas database managed via Mongoose schemas. Stores company profiles, templates, campaigns, candidates, and delivery audit history.</li>
+    </ol>
+
+    <pre>
+[Candidate CSV] 
+       │ (PapaParse client-side)
+       ▼
+[React Frontend Client] ◄───(SSE EventSource Link)───┐
+       │ (REST APIs)                                │
+       ▼                                            │
+[Express Backend API] ◄───(Pixel HTTP GET)──┐       │ (Status Broadcast)
+       │                                     │       │
+       ├─(Mongoose)──► [MongoDB Atlas DB]    │       │
+       │                                     │       │
+       └─(Nodemailer)─► [SMTP Server]        │       │
+                              │              │       │
+                       (Deliver Mail)        │       │
+                              ▼              │       │
+                     [Candidate Inbox] ──────┴───────┘
+                     (Opens Mail -> Loads Pixel)
+    </pre>
+
+    <!-- 4. TECH STACK -->
+    <h2>4. Technology Stack</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Component</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend</strong></td>
+          <td>React.js (v18+)</td>
+          <td>Single Page Application framework. Drives interactive components and state.</td>
+        </tr>
+        <tr>
+          <td><strong>Build Tool</strong></td>
+          <td>Vite</td>
+          <td>Build tool for rapid module replacement (HMR) and optimized compilations.</td>
+        </tr>
+        <tr>
+          <td><strong>CSS styling</strong></td>
+          <td>Vanilla CSS Custom Properties</td>
+          <td>Implements layout variables, animations, scrollbar overlays, and dark-mode tokens.</td>
+        </tr>
+        <tr>
+          <td><strong>CSV parsing</strong></td>
+          <td>PapaParse</td>
+          <td>High-performance parser to process candidate csv lists inside the browser.</td>
+        </tr>
+        <tr>
+          <td><strong>Backend API</strong></td>
+          <td>Node.js / Express.js</td>
+          <td>Event-driven REST server handling HTTP requests and asynchronous send processes.</td>
+        </tr>
+        <tr>
+          <td><strong>Database</strong></td>
+          <td>MongoDB Atlas & Mongoose</td>
+          <td>NoSQL cloud database managing object models and data relations.</td>
+        </tr>
+        <tr>
+          <td><strong>Mailing Engine</strong></td>
+          <td>Nodemailer</td>
+          <td>Direct email creation library, connecting to custom SMTP servers.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 5. DATABASE SCHEMA -->
+    <h2>5. Database Schema & Models</h2>
+    
+    <h3>Company Profile Model (<code>Company.js</code>)</h3>
+    <p>Stores the organization profile, branding asset representations, and encrypted SMTP email settings.</p>
+    <pre><code>name: { type: String, required: true },
+tagline: { type: String },
+logo: { type: String }, // Stores SVG code or Base64 Image
+address: { type: String },
+email: { type: String },
+phone: { type: String },
+website: { type: String },
+smtp: {
+  host: { type: String },
+  port: { type: Number },
+  secure: { type: Boolean },
+  user: { type: String },
+  pass: { type: String }
+}</code></pre>
+
+    <h3>Template Model (<code>Template.js</code>)</h3>
+    <p>Stores pre-set letter subjects, HTML/text templates, styling properties, and logo constraints.</p>
+    <pre><code>name: { type: String, required: true },
+subject: { type: String, required: true },
+body: { type: String, required: true },
+style: { type: String, enum: ['Modern', 'Classic', 'Minimal'], default: 'Modern' },
+companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true }</code></pre>
+
+    <h3>Candidate Model (<code>Candidate.js</code>)</h3>
+    <p>Maps candidate values (Name, Email, Phone, Role) and custom key-value spreadsheet properties to their dispatch tracking statuses.</p>
+    <pre><code>campaignId: { type: mongoose.Schema.Types.ObjectId, ref: 'Campaign', required: true },
+name: { type: String, required: true },
+email: { type: String, required: true },
+role: { type: String },
+department: { type: String },
+salary: { type: String },
+joiningDate: { type: String },
+status: { type: String, enum: ['Pending', 'Validated', 'Invalid Email', 'Sending', 'Sent', 'Failed', 'Opened'], default: 'Pending' },
+openedAt: { type: Date },
+error: { type: String },
+customFields: { type: Map, of: String }</code></pre>
+
+    <!-- 6. KEY FEATURES IMPLEMENTATION -->
+    <h2>6. Key Features Implementation Details</h2>
+
+    <h3>A. Interactive Spreadsheet Grid (Data Review)</h3>
+    <p>
+      In Step 2 of the campaign wizard, candidates parsed from the CSV are shown in a grid. HR coordinators can search, filter by role, delete rows, or double-click to edit data fields inline. The frontend saves edits on blur via <code>PUT /api/campaigns/candidates/:id</code>, which triggers dynamic re-validation of email structures and database commits.
+    </p>
+
+    <h3>B. Dynamic PDF Layout Scaling (Template Editor)</h3>
+    <p>
+      In Step 3, the editor provides an A4-proportioned paper sheet. To display it accurately alongside the configuration bar, we use a <code>ResizeObserver</code> in React. It calculates the viewport dimensions of the preview box and applies a CSS scale transform (e.g. <code>transform: scale(0.65)</code>) to fit the page without altering internal line breaks, font ratios, or margins.
+    </p>
+
+    <h3>C. Real-time Open Tracking (Server-Sent Events)</h3>
+    <p>
+      When campaigns are sent, our email router embeds a tracking pixel:
+    </p>
+    <pre><code>&lt;img src="https://offer-letter-generator-whu4.onrender.com/api/email/track/:candidateId.gif" ... /&gt;</code></pre>
+    <p>
+      When the client loads the mail, the request hits the tracking route in <code>email.js</code>. The backend:
+    </p>
+    <ol>
+      <li>Updates the candidate's status to <code>'Opened'</code> and saves the <code>openedAt</code> timestamp.</li>
+      <li>Serves a 43-byte transparent tracking GIF with headers that prevent caching:
+        <pre><code>'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache'</code></pre>
+      </li>
+      <li>Pushes this event to active frontend client pages using an open **Server-Sent Events (SSE)** channel (<code>GET /track/events</code>). The client updates the status instantly.</li>
+      <li>If the SSE stream fails, a fallback polling hook automatically fetches the database every 3 seconds using a cache-busting timestamp (<code>?t=Date.now()</code>).</li>
+    </ol>
+
+    <h3>D. Gmail-Safe Pixel Injection (Anti-Clipping)</h3>
+    <p>
+      Gmail clips emails exceeding 102KB. Since our emails embed base64 company logos (e.g. the 136KB AICTE stamp), Gmail automatically hides the bottom sections of emails. Placing the pixel at the bottom would prevent it from loading. We solve this by injecting the tracking pixel immediately after the opening <code>&lt;body&gt;</code> tag at the very top of the email.
+    </p>
+
+    <h3>E. Persistent Dark Mode</h3>
+    <p>
+      Managed globally via React Context, a class name <code>dark-mode</code> is toggled on the main HTML body tag and cached in local storage. Themes are driven by CSS custom properties in <code>index.css</code>:
+    </p>
+    <pre><code>body { --bg-app: #f8fafc; --bg-card: #ffffff; }
+body.dark-mode { --bg-app: #0f172a; --bg-card: #1e293b; }</code></pre>
+
+    <!-- 7. TROUBLESHOOTING LOGS -->
+    <h2>7. Troubleshooting & Layout Refactorings</h2>
+    <ul>
+      <li>
+        <strong>Scrollable Editor Area:</strong> Initially, a fixed vertical height constraint and <code>overflow: hidden</code> clipped the editor text area on small screens. We removed the fixed height on the parent view and added a dynamic <code>height: calc(100vh - 280px)</code> with a <code>min-height: 650px</code> rule, restoring clean page scrolling.
+      </li>
+      <li>
+        <strong>Logo Bleed-out Overrides:</strong> Custom SVG definitions uploaded as company logos bled out of layout containers. We introduced <code>.logo-svg-wrapper</code> wrappers to scale logos to a maximum of 32x32px within navigation toolbars.
+      </li>
+    </ul>
+
+    <!-- 8. CONCLUSION -->
+    <h2>8. Conclusion & Future Scope</h2>
+    <p>
+      OfferFlow HR successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).
+    </p>
+  </div>
+
+</body>
+</html>
