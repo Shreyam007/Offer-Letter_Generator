@@ -13,5 +13,8 @@ const campaignSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+campaignSchema.index({ companyId: 1 });
+campaignSchema.index({ templateId: 1 });
+
 const Campaign = mongoose.model('Campaign', campaignSchema);
 export default Campaign;

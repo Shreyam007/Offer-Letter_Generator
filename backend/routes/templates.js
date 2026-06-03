@@ -95,7 +95,7 @@ router.get('/', async (req, res) => {
 
   try {
     await seedDefaultTemplates();
-    const templates = await Template.find({}).populate('companyId');
+    const templates = await Template.find({}).populate('companyId').lean();
     res.json(templates);
   } catch (error) {
     console.error('Error fetching templates from DB:', error);
@@ -126,7 +126,7 @@ router.get('/company/:companyId', async (req, res) => {
   }
 
   try {
-    const templates = await Template.find({ companyId: req.params.companyId });
+    const templates = await Template.find({ companyId: req.params.companyId }).lean();
     res.json(templates);
   } catch (error) {
     res.status(500).json({ message: error.message });

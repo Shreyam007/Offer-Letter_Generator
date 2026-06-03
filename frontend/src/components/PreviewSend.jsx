@@ -344,8 +344,8 @@ const PreviewSend = () => {
                           </div>
                         </div>
                         <div className="letter-date-ref">
-                          <div>October 24, 2026</div>
-                          <div>Ref: GC-2026-DIS-092</div>
+                          <div>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                          <div>Ref: OF-{new Date().getFullYear()}-MOD-{activeCandidate._id ? activeCandidate._id.toString().slice(-4).toUpperCase() : 'TEMP'}</div>
                         </div>
                       </div>
                       
@@ -391,8 +391,8 @@ const PreviewSend = () => {
                       </div>
                       
                       <div className="letter-date-ref">
-                        <span>Ref: GC-2026-DIS-092</span>
-                        <span>October 24, 2026</span>
+                        <span>Ref: OF-{new Date().getFullYear()}-CLA-{activeCandidate._id ? activeCandidate._id.toString().slice(-4).toUpperCase() : 'TEMP'}</span>
+                        <span>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                       </div>
 
                       <div className="letter-content" dangerouslySetInnerHTML={renderLetterBody(template?.body, activeCandidate)} />
@@ -433,7 +433,7 @@ const PreviewSend = () => {
                       </div>
                       
                       <div className="letter-date-ref">
-                        October 24, 2026 / Ref: GC-2026-DIS
+                        {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} / Ref: OF-{new Date().getFullYear()}-MIN-{activeCandidate._id ? activeCandidate._id.toString().slice(-4).toUpperCase() : 'TEMP'}
                       </div>
 
                       <div className="letter-content" style={{ fontSize: '12px' }} dangerouslySetInnerHTML={renderLetterBody(template?.body, activeCandidate)} />

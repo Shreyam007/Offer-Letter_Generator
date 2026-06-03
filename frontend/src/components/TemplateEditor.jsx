@@ -25,6 +25,27 @@ const TemplateEditor = () => {
     setStep 
   } = useApp();
 
+  const firstSelected = candidates.find(c => selectedCandidateIds?.includes(c._id));
+  const candidate = firstSelected || (candidates.length > 0 ? candidates[0] : {
+    name: 'John Doe',
+    role: 'Senior Product Designer',
+    department: 'Product',
+    salary: '$120,000',
+    joiningDate: 'Oct 12, 2026',
+    email: 'john.doe@example.com',
+    customFields: {}
+  });
+
+  const currentDateStr = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const candidateIdStr = candidate._id ? candidate._id.toString() : (candidate.id || 'TEMP');
+  const refSuffix = candidateIdStr.slice(-4).toUpperCase();
+
+
   const PREBUILT_TEMPLATES = {
     Modern: {
       subject: "Offer of Employment at {{Company}} - {{Name}}",
@@ -236,17 +257,6 @@ Sincerely,
   // Compile helper for Live Preview
   const compileText = (text) => {
     if (!text) return '';
-    
-    // Choose the first selected candidate or fallback to the first candidate, or mockup data
-    const firstSelected = candidates.find(c => selectedCandidateIds?.includes(c._id));
-    const candidate = firstSelected || (candidates.length > 0 ? candidates[0] : {
-      name: 'John Doe',
-      role: 'Senior Product Designer',
-      department: 'Product',
-      salary: '$120,000',
-      joiningDate: 'Oct 12, 2023',
-      customFields: {}
-    });
 
     const vars = {
       Name: candidate.name,
@@ -570,14 +580,14 @@ Sincerely,
                       </div>
                     </div>
                     <div className="letter-date-ref">
-                      <div>October 24, 2026</div>
-                      <div>Ref: GC-2026-DIS-092</div>
+                      <div>{currentDateStr}</div>
+                      <div>Ref: OF-{new Date().getFullYear()}-MOD-{refSuffix}</div>
                     </div>
                   </div>
                   
                   <div className="letter-recipient">
-                    <strong>{candidates.length > 0 ? candidates[0].name : 'John Doe'}</strong>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{candidates.length > 0 ? candidates[0].email : 'john.doe@example.com'}</div>
+                    <strong>{candidate.name}</strong>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{candidate.email || 'john.doe@example.com'}</div>
                   </div>
                   
                   <div className="letter-content" dangerouslySetInnerHTML={{ __html: htmlMode ? compileText(body) : escapeHtml(compileText(body)).replace(/\n/g, '<br/>') }} />
@@ -585,11 +595,11 @@ Sincerely,
                   <div className="letter-stats-grid">
                     <div className="letter-stat-item">
                       <div className="letter-stat-label">Annual Salary</div>
-                      <div className="letter-stat-value">{candidates.length > 0 ? candidates[0].salary : '$120,000 USD'}</div>
+                      <div className="letter-stat-value">{candidate.salary || '$120,000 USD'}</div>
                     </div>
                     <div className="letter-stat-item">
                       <div className="letter-stat-label">Start Date</div>
-                      <div className="letter-stat-value">{candidates.length > 0 ? candidates[0].joiningDate : 'Oct 12, 2026'}</div>
+                      <div className="letter-stat-value">{candidate.joiningDate || 'Oct 12, 2026'}</div>
                     </div>
                   </div>
 
@@ -617,8 +627,8 @@ Sincerely,
                   </div>
                   
                   <div className="letter-date-ref">
-                    <span>Ref: GC-2026-DIS-092</span>
-                    <span>October 24, 2026</span>
+                    <span>Ref: OF-{new Date().getFullYear()}-CLA-{refSuffix}</span>
+                    <span>{currentDateStr}</span>
                   </div>
 
                   <div className="letter-content" dangerouslySetInnerHTML={{ __html: htmlMode ? compileText(body) : escapeHtml(compileText(body)).replace(/\n/g, '<br/>') }} />
@@ -626,11 +636,11 @@ Sincerely,
                   <div className="letter-stats-grid">
                     <div className="letter-stat-item">
                       <div className="letter-stat-label">Salary</div>
-                      <div className="letter-stat-value">{candidates.length > 0 ? candidates[0].salary : '$120,000'}</div>
+                      <div className="letter-stat-value">{candidate.salary || '$120,000'}</div>
                     </div>
                     <div className="letter-stat-item">
                       <div className="letter-stat-label">Start Date</div>
-                      <div className="letter-stat-value">{candidates.length > 0 ? candidates[0].joiningDate : 'Oct 12, 2026'}</div>
+                      <div className="letter-stat-value">{candidate.joiningDate || 'Oct 12, 2026'}</div>
                     </div>
                   </div>
 
@@ -659,7 +669,7 @@ Sincerely,
                   </div>
                   
                   <div className="letter-date-ref">
-                    October 24, 2026 / Ref: GC-2026-DIS
+                    {currentDateStr} / Ref: OF-{new Date().getFullYear()}-MIN-{refSuffix}
                   </div>
 
                   <div className="letter-content" style={{ fontSize: '12px' }} dangerouslySetInnerHTML={{ __html: htmlMode ? compileText(body) : escapeHtml(compileText(body)).replace(/\n/g, '<br/>') }} />
@@ -667,11 +677,11 @@ Sincerely,
                   <div className="letter-stats-grid">
                     <div className="letter-stat-item">
                       <div className="letter-stat-label">COMPENSATION</div>
-                      <div className="letter-stat-value">{candidates.length > 0 ? candidates[0].salary : '$120,000'}</div>
+                      <div className="letter-stat-value">{candidate.salary || '$120,000'}</div>
                     </div>
                     <div className="letter-stat-item">
                       <div className="letter-stat-label">START DATE</div>
-                      <div className="letter-stat-value">{candidates.length > 0 ? candidates[0].joiningDate : 'Oct 12, 2026'}</div>
+                      <div className="letter-stat-value">{candidate.joiningDate || 'Oct 12, 2026'}</div>
                     </div>
                   </div>
 

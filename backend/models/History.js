@@ -11,5 +11,7 @@ const historySchema = mongoose.Schema(
   }
 );
 
+historySchema.index({ campaignId: 1 });
+
 const History = mongoose.model('History', historySchema);
 export default History;

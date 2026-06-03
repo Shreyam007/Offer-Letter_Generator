@@ -21,5 +21,7 @@ const candidateSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+candidateSchema.index({ campaignId: 1 });
+
 const Candidate = mongoose.model('Candidate', candidateSchema);
 export default Candidate;

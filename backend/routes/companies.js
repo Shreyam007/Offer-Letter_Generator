@@ -95,7 +95,7 @@ router.get('/', async (req, res) => {
       { $set: { logo: aicteSvg } }
     );
 
-    const companies = await Company.find({});
+    const companies = await Company.find({}).lean();
     res.json(companies);
   } catch (error) {
     console.error('Error fetching companies from DB:', error);

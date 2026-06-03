@@ -11,5 +11,7 @@ const templateSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+templateSchema.index({ companyId: 1 });
+
 const Template = mongoose.model('Template', templateSchema);
 export default Template;

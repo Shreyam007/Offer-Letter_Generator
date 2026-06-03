@@ -44,7 +44,8 @@ router.get('/', async (req, res) => {
     const campaigns = await Campaign.find({})
       .populate('companyId')
       .populate('templateId')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(campaigns);
   } catch (error) {
     console.error('Error fetching campaigns from DB:', error);
@@ -104,7 +105,8 @@ router.get('/:id', async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id)
       .populate('companyId')
-      .populate('templateId');
+      .populate('templateId')
+      .lean();
     if (campaign) {
       res.json(campaign);
     } else {
@@ -185,7 +187,7 @@ router.get('/:id/candidates', async (req, res) => {
   }
 
   try {
-    const candidates = await Candidate.find({ campaignId: req.params.id });
+    const candidates = await Candidate.find({ campaignId: req.params.id }).lean();
     res.json(candidates);
   } catch (error) {
     res.status(500).json({ message: error.message });
