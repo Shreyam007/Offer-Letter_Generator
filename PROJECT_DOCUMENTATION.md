@@ -55,6 +55,7 @@ The application follows a decoupled client-server architecture:
 * **Backend Server**: Node.js & Express.js
 * **Mailing Engine**: Nodemailer
 * **Database**: MongoDB Atlas & Mongoose
+* **PDF Compilation Engine**: PDFKit (pure JS in-memory buffer generation)
 
 ---
 
@@ -120,6 +121,12 @@ Gmail clips emails over 102KB (commonly caused by large base64/SVG logo structur
 
 ### E. Persistent Dark Mode
 Managed globally via React Context, toggling a `.dark-mode` class on the `<body>` element and caching it in `localStorage`. Styling swaps are handled instantly via CSS variables.
+
+### F. Automated PDF Offer Letter Attachments
+To align with professional company workflows, the email dispatch loop automatically generates a matching PDF copy of the candidate's custom offer letter. 
+- **Pure-JS Buffer Generation**: Uses `pdfkit` to compile the layout coordinates on the server-side, avoiding chromium-based headless browser packages that cause memory-limit crashes on Render's free tier.
+- **Style Inheritance**: Inherits the selected template theme (`Modern`, `Classic`, or `Minimal`), generating a PDF with branding headers, custom double-border dividing rules, styled tables for compensation and start dates, and confidentiality notices.
+- **Attachment Injection**: Compiles the PDF binary buffer in-memory and appends it to the Nodemailer/Resend attachments array under the candidate's specific name.
 
 ---
 

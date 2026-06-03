@@ -313,6 +313,11 @@
           <td>Nodemailer</td>
           <td>Direct email creation library, connecting to custom SMTP servers.</td>
         </tr>
+        <tr>
+          <td><strong>PDF Engine</strong></td>
+          <td>PDFKit</td>
+          <td>In-memory server-side PDF generator to compile offer letters.</td>
+        </tr>
       </tbody>
     </table>
 
@@ -399,6 +404,16 @@ customFields: { type: Map, of: String }</code></pre>
     </p>
     <pre><code>body { --bg-app: #f8fafc; --bg-card: #ffffff; }
 body.dark-mode { --bg-app: #0f172a; --bg-card: #1e293b; }</code></pre>
+
+    <h3>F. Automated PDF Offer Letter Attachments</h3>
+    <p>
+      During the campaign dispatch loop, a matching PDF copy of the candidate's personalized offer letter is automatically generated and attached to the email.
+    </p>
+    <ul>
+      <li><strong>Pure-JS Compilation:</strong> Built dynamically using <code>pdfkit</code>, bypassing heavy headless chrome requirements that would exceed Render's free tier memory bounds.</li>
+      <li><strong>Style Matching:</strong> Correctly maps document colors, brand headers, text margins, double line separators, and tabular grid structures according to the chosen template style (Modern, Classic, Minimal).</li>
+      <li><strong>Dynamic Data Binding:</strong> Values are compiled and layout elements dynamically adapt based on candidate parameters. Multi-page flows automatically insert page breaks when contents overflow standard A4 layouts.</li>
+    </ul>
 
     <!-- 7. TROUBLESHOOTING LOGS -->
     <h2>7. Troubleshooting & Layout Refactorings</h2>
