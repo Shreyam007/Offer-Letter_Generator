@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
+import PDFDocument from 'pdfkit';
 import Campaign from '../models/Campaign.js';
 import Candidate from '../models/Candidate.js';
 import Company from '../models/Company.js';
@@ -21,6 +22,258 @@ const compileTemplate = (text, variables) => {
   });
   result = result.replace(/{{\s*(.*?)\s*}}/g, '$1');
   return result;
+};
+
+const generateOfferLetterPdf = (candidate, company, template, bodyText, style) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'A4', margin: 50 });
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', err => reject(err));
+
+      const currentDateStr = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      const candidateIdStr = candidate._id ? candidate._id.toString() : (candidate.id || 'TEMP');
+      const refSuffix = candidateIdStr.slice(-4).toUpperCase();
+
+      // Try to parse company logo if it's a base64 raster image
+      let logoBuffer = null;
+      if (company.logo && company.logo.startsWith('data:image/') && !company.logo.startsWith('data:image/svg+xml')) {
+        const match = company.logo.match(/^data:image\/([^;]+);base64,(.+)$/);
+        if (match) {
+          logoBuffer = Buffer.from(match[2].trim(), 'base64');
+        }
+      }
+
+      if (style === 'Classic') {
+        doc.font('Times-Roman');
+
+        // Header
+        doc.font('Times-Bold').fontSize(24).fillColor('#1e293b');
+        doc.text(company.name.toUpperCase(), 50, 45, { align: 'center', width: 495 });
+
+        if (company.tagline) {
+          doc.font('Times-Italic').fontSize(11).fillColor('#64748b');
+          doc.text(company.tagline, 50, 75, { align: 'center', width: 495 });
+        }
+
+        // Double lines
+        doc.moveTo(50, 95).lineTo(545, 95).strokeColor('#94a3b8').lineWidth(1.5).stroke();
+        doc.moveTo(50, 99).lineTo(545, 99).strokeColor('#94a3b8').lineWidth(0.5).stroke();
+
+        // Ref / Date table
+        doc.font('Times-Roman').fontSize(10).fillColor('#475569');
+        doc.text(`Ref: OF-${new Date().getFullYear()}-CLA-${refSuffix}`, 50, 115);
+        doc.text(currentDateStr, 350, 115, { width: 195, align: 'right' });
+
+        // Recipient
+        doc.font('Times-Bold').fontSize(12).fillColor('#0f172a');
+        doc.text(`Dear ${candidate.name},`, 50, 145);
+
+        // Body content
+        doc.font('Times-Roman').fontSize(11).fillColor('#1e293b');
+        doc.text(bodyText, 50, 175, { width: 495, align: 'justify', lineGap: 5 });
+
+        let currentY = doc.y + 25;
+
+        // Stats grid
+        if (currentY + 70 > 791) {
+          doc.addPage();
+          currentY = 50;
+        }
+
+        doc.save();
+        doc.rect(50, currentY, 495, 55).fill('#f8fafc');
+        doc.rect(50, currentY, 495, 55).strokeColor('#cbd5e1').lineWidth(1).stroke();
+        doc.moveTo(297.64, currentY).lineTo(297.64, currentY + 55).strokeColor('#cbd5e1').stroke();
+        doc.restore();
+
+        doc.font('Times-Bold').fontSize(9).fillColor('#475569');
+        doc.text('SALARY', 50, currentY + 12, { width: 247.64, align: 'center' });
+        doc.font('Times-Bold').fontSize(14).fillColor('#0f172a');
+        doc.text(candidate.salary || '-', 50, currentY + 28, { width: 247.64, align: 'center' });
+
+        doc.font('Times-Bold').fontSize(9).fillColor('#475569');
+        doc.text('START DATE', 297.64, currentY + 12, { width: 247.64, align: 'center' });
+        doc.font('Times-Bold').fontSize(14).fillColor('#0f172a');
+        doc.text(candidate.joiningDate || '-', 297.64, currentY + 28, { width: 247.64, align: 'center' });
+
+        currentY += 80;
+
+        // Sign-off
+        if (currentY + 80 > 791) {
+          doc.addPage();
+          currentY = 50;
+        }
+
+        doc.font('Times-Roman').fontSize(11).fillColor('#1e293b');
+        doc.text('Sincerely,', 50, currentY);
+        doc.font('Times-Bold').fontSize(11).fillColor('#1e293b');
+        doc.text('HR Department', 50, currentY + 30);
+        doc.text(company.name, 50, currentY + 45);
+
+      } else if (style === 'Minimal') {
+        doc.font('Helvetica');
+
+        // Header logo & name
+        if (logoBuffer) {
+          try {
+            doc.image(logoBuffer, 50, 40, { height: 30 });
+          } catch (err) {
+            console.error('Failed to embed logo in Minimal PDF:', err);
+          }
+        }
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#0f172a');
+        doc.text(company.name.toUpperCase(), 350, 45, { width: 195, align: 'right' });
+
+        // Date and Ref
+        doc.font('Helvetica').fontSize(10).fillColor('#94a3b8');
+        doc.text(`${currentDateStr} / Ref: OF-${new Date().getFullYear()}-MIN-${refSuffix}`, 50, 85);
+
+        // Line divider
+        doc.moveTo(50, 105).lineTo(545, 105).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+
+        // Content
+        doc.font('Helvetica').fontSize(10.5).fillColor('#334155');
+        doc.text(bodyText, 50, 125, { width: 495, align: 'justify', lineGap: 4 });
+
+        let currentY = doc.y + 20;
+
+        // Stats grid
+        if (currentY + 60 > 791) {
+          doc.addPage();
+          currentY = 50;
+        }
+
+        doc.save();
+        doc.moveTo(50, currentY).lineTo(545, currentY).strokeColor('#e2e8f0').lineWidth(1).stroke();
+        doc.restore();
+
+        doc.font('Helvetica').fontSize(9).fillColor('#94a3b8');
+        doc.text('COMPENSATION', 50, currentY + 10);
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#0f172a');
+        doc.text(candidate.salary || '-', 50, currentY + 23);
+
+        doc.font('Helvetica').fontSize(9).fillColor('#94a3b8');
+        doc.text('START DATE', 300, currentY + 10);
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#0f172a');
+        doc.text(candidate.joiningDate || '-', 300, currentY + 23);
+
+        currentY += 55;
+
+        doc.save();
+        doc.moveTo(50, currentY).lineTo(545, currentY).strokeColor('#e2e8f0').lineWidth(1).stroke();
+        doc.restore();
+
+        currentY += 20;
+
+        // Sign-off
+        if (currentY + 50 > 791) {
+          doc.addPage();
+          currentY = 50;
+        }
+
+        doc.font('Helvetica').fontSize(10.5).fillColor('#334155');
+        doc.text('Best regards,', 50, currentY);
+        doc.font('Helvetica-Bold').fontSize(10.5).fillColor('#0f172a');
+        doc.text(company.name, 50, currentY + 15);
+
+        // Confidentiality footer
+        doc.font('Helvetica-Oblique').fontSize(9).fillColor('#94a3b8');
+        doc.text('CONFIDENTIALITY NOTICE: The information in this document is private.', 50, 780, { width: 495, align: 'center' });
+
+      } else {
+        // Modern Style
+        doc.font('Helvetica');
+
+        // Top brand bar
+        doc.rect(0, 0, 595.28, 8).fill('#0b3c95');
+
+        // Header logo/name
+        if (logoBuffer) {
+          try {
+            doc.image(logoBuffer, 50, 40, { height: 40 });
+          } catch (err) {
+            console.error('Failed to embed logo in Modern PDF:', err);
+            doc.font('Helvetica-Bold').fontSize(22).fillColor('#0b3c95').text(company.name, 50, 40);
+          }
+        } else {
+          doc.font('Helvetica-Bold').fontSize(22).fillColor('#0b3c95').text(company.name, 50, 40);
+        }
+
+        // Date and Ref
+        doc.font('Helvetica').fontSize(10).fillColor('#64748b');
+        doc.text(currentDateStr, 350, 40, { width: 195, align: 'right' });
+        doc.text(`Ref: OF-${new Date().getFullYear()}-MOD-${refSuffix}`, 350, 55, { width: 195, align: 'right' });
+
+        // Divider
+        doc.moveTo(50, 95).lineTo(545, 95).strokeColor('#e2e8f0').lineWidth(1).stroke();
+
+        // Recipient
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#0f172a');
+        doc.text(`Dear ${candidate.name},`, 50, 115);
+        doc.font('Helvetica').fontSize(10).fillColor('#64748b');
+        doc.text(candidate.email || '', 50, 130);
+
+        // Body Content
+        doc.font('Helvetica').fontSize(11).fillColor('#1e293b');
+        doc.text(bodyText, 50, 160, { width: 495, align: 'justify', lineGap: 4 });
+
+        let currentY = doc.y + 25;
+
+        // Stats grid
+        if (currentY + 100 > 791) {
+          doc.addPage();
+          currentY = 50;
+        }
+
+        doc.save();
+        doc.rect(50, currentY, 495, 60).fill('#f8fafc');
+        doc.rect(50, currentY, 495, 60).strokeColor('#e2e8f0').lineWidth(1).stroke();
+        doc.restore();
+
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#64748b');
+        doc.text('ANNUAL SALARY', 70, currentY + 15);
+        doc.font('Helvetica-Bold').fontSize(14).fillColor('#0b3c95');
+        doc.text(candidate.salary || '-', 70, currentY + 30);
+
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#64748b');
+        doc.text('START DATE', 300, currentY + 15);
+        doc.font('Helvetica-Bold').fontSize(14).fillColor('#0b3c95');
+        doc.text(candidate.joiningDate || '-', 300, currentY + 30);
+
+        currentY += 85;
+
+        // Sign-off
+        if (currentY + 60 > 791) {
+          doc.addPage();
+          currentY = 50;
+        }
+
+        doc.font('Helvetica').fontSize(11).fillColor('#1e293b');
+        doc.text('Best regards,', 50, currentY);
+        doc.font('Helvetica-Bold').fontSize(11).fillColor('#1e293b');
+        doc.text('HR Team', 50, currentY + 20);
+        doc.font('Helvetica').fontSize(11).fillColor('#64748b');
+        doc.text(company.name, 50, currentY + 35);
+
+        // Footer at bottom
+        doc.moveTo(50, 770).lineTo(545, 770).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+        doc.font('Helvetica').fontSize(9).fillColor('#94a3b8');
+        doc.text(`This is an official document from ${company.name} HR department.`, 50, 780, { width: 495, align: 'center' });
+      }
+
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
 };
 
 // Convert an SVG string to a base64 data URI that email clients can render as <img>.
@@ -278,6 +531,17 @@ router.post('/send-campaign', async (req, res) => {
         const logoSrc = svgToDataUri(company.logo);
         let logoHtml = '';
         let emailAttachments = [];
+
+        try {
+          const pdfBuffer = await generateOfferLetterPdf(candidate, company, template, mailBody, templateStyle);
+          emailAttachments.push({
+            filename: `${candidate.name.replace(/\s+/g, '_')}_Offer_Letter.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf'
+          });
+        } catch (pdfErr) {
+          console.error(`Failed to generate PDF for ${candidate.name}:`, pdfErr);
+        }
 
         // Check if the logo is a PNG/JPEG/GIF data URI (Gmail blocks SVG inline/CID images, so we handle raster formats here)
         if (logoSrc && logoSrc.startsWith('data:image/') && !logoSrc.startsWith('data:image/svg+xml')) {
