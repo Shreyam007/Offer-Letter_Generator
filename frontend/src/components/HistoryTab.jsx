@@ -12,7 +12,8 @@ import {
   Layers,
   ChevronRight,
   Eye,
-  RefreshCw
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 
 const HistoryTab = () => {
@@ -56,7 +57,12 @@ const HistoryTab = () => {
         // Instantly update the candidate in the local state
         setCampaignCandidates(prev => prev.map(c => 
           c._id === updatedCandidate.candidateId 
-            ? { ...c, status: updatedCandidate.status, openedAt: updatedCandidate.openedAt }
+            ? { 
+                ...c, 
+                status: updatedCandidate.status, 
+                openedAt: updatedCandidate.openedAt || c.openedAt,
+                error: updatedCandidate.error !== undefined ? updatedCandidate.error : c.error
+              }
             : c
         ));
       } catch (err) {
@@ -424,10 +430,20 @@ const HistoryTab = () => {
                               <CheckCircle2 size={12} />
                               <span>Sent</span>
                             </span>
-                          ) : (
+                          ) : cand.status === 'Failed' ? (
                             <span className="text-pink-600 flex items-center gap-1 text-xs font-bold bg-pink-50 border border-pink-100 px-2 py-0.5 rounded-full" title={cand.error}>
                               <XCircle size={12} />
                               <span>Failed</span>
+                            </span>
+                          ) : ['Sending', 'Retrying'].includes(cand.status) ? (
+                            <span className="text-blue-600 flex items-center gap-1 text-xs font-bold bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+                              <RefreshCw size={12} className="animate-spin" />
+                              <span>{cand.status}</span>
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 flex items-center gap-1 text-xs font-bold bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
+                              <Clock size={12} />
+                              <span>Pending</span>
                             </span>
                           )}
 

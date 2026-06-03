@@ -13,6 +13,21 @@ import { inMemoryCampaigns, inMemoryCandidates } from './campaigns.js';
 
 const router = express.Router();
 
+// Active SSE clients for real-time open notifications
+let sseClients = [];
+
+// Helper function to broadcast candidate updates (such as Sending, Sent, Failed, Opened)
+function broadcastCandidateUpdate(candidateId, status, openedAt = null, error = '') {
+  const data = JSON.stringify({ candidateId, status, openedAt, error });
+  sseClients.forEach(client => {
+    try {
+      client.write(`data: ${data}\n\n`);
+    } catch (err) {
+      console.error('[SSE] Error writing to client:', err);
+    }
+  });
+}
+
 const compileTemplate = (text, variables) => {
   if (!text) return '';
   let result = text;
@@ -499,6 +514,7 @@ router.post('/send-campaign', async (req, res) => {
       const candidate = targetCandidates[i];
       candidate.status = 'Sending';
       if (!isOffline) await candidate.save();
+      broadcastCandidateUpdate(candidate._id.toString(), 'Sending');
 
       const templateVariables = {
         Name: candidate.name,
@@ -523,6 +539,7 @@ router.post('/send-campaign', async (req, res) => {
         if (attempt > 1) {
           candidate.status = 'Retrying';
           if (!isOffline) await candidate.save();
+          broadcastCandidateUpdate(candidate._id.toString(), 'Retrying');
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
@@ -784,6 +801,7 @@ router.post('/send-campaign', async (req, res) => {
           await campaign.save();
           await History.create({ campaignId, candidateName: candidate.name, candidateEmail: candidate.email, status: 'Sent' });
         }
+        broadcastCandidateUpdate(candidate._id.toString(), 'Sent');
       } else {
         candidate.status = 'Failed';
         candidate.error = errorMessage;
@@ -793,6 +811,7 @@ router.post('/send-campaign', async (req, res) => {
           await campaign.save();
           await History.create({ campaignId, candidateName: candidate.name, candidateEmail: candidate.email, status: 'Failed', error: errorMessage });
         }
+        broadcastCandidateUpdate(candidate._id.toString(), 'Failed', null, errorMessage);
       }
 
       if (i < targetCandidates.length - 1) {
@@ -806,20 +825,7 @@ router.post('/send-campaign', async (req, res) => {
   })();
 });
 
-// Active SSE clients for real-time open notifications
-let sseClients = [];
 
-// Helper function to broadcast open events
-const notifyClientsOfOpen = (candidateId, status, openedAt) => {
-  const data = JSON.stringify({ candidateId, status, openedAt });
-  sseClients.forEach(client => {
-    try {
-      client.write(`data: ${data}\n\n`);
-    } catch (err) {
-      console.error('[SSE] Error writing to client:', err);
-    }
-  });
-};
 
 // SSE stream endpoint
 router.get('/track/events', (req, res) => {
@@ -859,7 +865,7 @@ router.get('/track/:candidateId.gif', async (req, res) => {
         candidate.status = 'Opened';
         candidate.openedAt = new Date();
         console.log(`[Offline] Candidate ${candidate.name} (${candidate.email}) status updated to Opened`);
-        notifyClientsOfOpen(candidateId, 'Opened', candidate.openedAt);
+        broadcastCandidateUpdate(candidateId, 'Opened', candidate.openedAt);
       }
     } else {
       if (mongoose.Types.ObjectId.isValid(candidateId)) {
@@ -869,7 +875,7 @@ router.get('/track/:candidateId.gif', async (req, res) => {
           candidate.openedAt = new Date();
           await candidate.save();
           console.log(`[DB] Candidate ${candidate.name} (${candidate.email}) status updated to Opened`);
-          notifyClientsOfOpen(candidate._id.toString(), 'Opened', candidate.openedAt);
+          broadcastCandidateUpdate(candidate._id.toString(), 'Opened', candidate.openedAt);
         }
       }
     }

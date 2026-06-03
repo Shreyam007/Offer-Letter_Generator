@@ -572,10 +572,17 @@ const PreviewSend = () => {
 
                     <div>
                       {c.status === 'Opened' && (
-                        <span className="text-blue-600 flex items-center gap-1 font-bold">
-                          <Eye size={12} />
-                          <span>Opened</span>
-                        </span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-blue-600 flex items-center gap-1 font-bold">
+                            <Eye size={12} />
+                            <span>Opened</span>
+                          </span>
+                          {c.openedAt && (
+                            <span className="text-[10px] text-blue-500 font-medium mt-0.5" title={new Date(c.openedAt).toLocaleString()}>
+                              {new Date(c.openedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
                       )}
                       {c.status === 'Sent' && (
                         <span className="text-emerald-600 flex items-center gap-1 font-bold">

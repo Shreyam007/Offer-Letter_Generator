@@ -47,6 +47,46 @@ export const AppProvider = ({ children }) => {
     loadRecentActivity();
   }, []);
 
+  // Establish a global Server-Sent Events (SSE) listener for candidate status updates
+  useEffect(() => {
+    const eventSource = new EventSource(`${API_BASE}/email/track/events`);
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const updatedCandidate = JSON.parse(event.data);
+        console.log("[Global SSE] Received candidate status update:", updatedCandidate);
+        
+        // Instantly update the candidate status in the global state
+        setCandidates(prev => {
+          if (!Array.isArray(prev)) return prev;
+          return prev.map(c => 
+            c._id === updatedCandidate.candidateId 
+              ? { 
+                  ...c, 
+                  status: updatedCandidate.status, 
+                  openedAt: updatedCandidate.openedAt || c.openedAt,
+                  error: updatedCandidate.error !== undefined ? updatedCandidate.error : c.error
+                }
+              : c
+          );
+        });
+
+        // Whenever a candidate is updated, reload campaigns to refresh overall stats (sent/failed counts)
+        loadCampaigns();
+      } catch (err) {
+        console.error("[Global SSE] Error parsing SSE event:", err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.log("[Global SSE] Connection closed or failed.");
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
   // Whenever companies load, set a default selected company if not set
   useEffect(() => {
     if (companies.length > 0 && !selectedCompany) {
