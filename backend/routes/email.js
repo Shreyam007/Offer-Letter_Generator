@@ -751,8 +751,8 @@ router.post('/send-campaign', async (req, res) => {
         }
 
         // Use a publicly accessible tracking URL so that remote mail clients (like Gmail) can load the tracking pixel.
-        // Falls back to the public Render backend URL if process.env.TRACKING_URL is not set.
-        const trackingUrl = process.env.TRACKING_URL || 'https://offer-letter-generator-whu4.onrender.com';
+        // Falls back to the request origin dynamically, or the public Render backend URL as a fallback.
+        const trackingUrl = process.env.TRACKING_URL || `${req.protocol}://${req.get('host')}`;
         const trackingPixelUrl = `${trackingUrl.replace(/\/$/, '')}/api/email/track/${candidate._id}.gif`;
         const pixelHtml = `<img src="${trackingPixelUrl}" width="1" height="1" border="0" style="margin:0; padding:0; border:none; display:block;" alt="" />`;
         if (htmlEmail.includes('<body>')) {
@@ -852,8 +852,11 @@ router.get('/track/events', (req, res) => {
 });
 
 // Serve a 1x1 transparent tracking GIF and update candidate status to 'Opened'
-router.get('/track/:candidateId.gif', async (req, res) => {
-  const { candidateId } = req.params;
+router.get('/track/:candidateId', async (req, res) => {
+  let { candidateId } = req.params;
+  if (candidateId.endsWith('.gif')) {
+    candidateId = candidateId.slice(0, -4);
+  }
   console.log(`Tracking pixel requested for candidate: ${candidateId}`);
   
   try {
@@ -894,7 +897,8 @@ router.get('/track/:candidateId.gif', async (req, res) => {
     'Content-Length': trackingPixel.length,
     'Cache-Control': 'no-cache, no-store, must-revalidate',
     'Pragma': 'no-cache',
-    'Expires': '0'
+    'Expires': '0',
+    'Access-Control-Allow-Origin': '*'
   });
   res.end(trackingPixel);
 });
