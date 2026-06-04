@@ -104,17 +104,19 @@ Stores company branding info and SMTP configurations.
 ### A. Interactive Data Grid (Data Review)
 In Step 2 of the wizard, candidate records are shown in a spreadsheet-style grid ([DataReview.jsx](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/components/DataReview.jsx)). HR coordinators can search, filter by role, or edit values. On blur, the page calls `PUT /api/campaigns/candidates/:id` to save edits and automatically runs email validation.
 
-### B. Dynamic PDF Layout Scaling (Template Editor)
-To display a pixel-perfect A4 sheet in the browser ([TemplateEditor.jsx](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/components/TemplateEditor.jsx)), we use a `ResizeObserver` that watches the preview panel size and applies `transform: scale(...)` to scale the A4 preview box dynamically without breaking text wraps, margins, or header spacing.
+### B. Dynamic Preview Data Binding & Scaling (Template Editor)
+- **Scaling**: To display a pixel-perfect A4 sheet in the browser ([TemplateEditor.jsx](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/components/TemplateEditor.jsx)), we use a `ResizeObserver` that watches the preview panel size and applies `transform: scale(...)` to scale the A4 preview box dynamically without breaking text wraps, margins, or header spacing.
+- **Dynamic Bindings**: The editor binds the selected candidate's real credentials (name, email, role, department, salary, start date) dynamically in the preview sheet across all three styles (**Modern**, **Classic**, **Minimal**). The date and reference codes are computed dynamically to match the backend PDF generator.
 
 ### C. Real-time Open Tracking (Server-Sent Events)
 During dispatch, our mailing engine appends an image tag to the email template:
-`https://offer-letter-generator-whu4.onrender.com/api/email/track/:candidateId.gif`
+`[Host_Domain]/api/email/track/:candidateId.gif`
 When the email is opened, the client requests this GIF. The backend route:
-1. Updates candidate status to `'Opened'` and logs the `openedAt` timestamp.
-2. Serves a 43-byte transparent GIF with cache-disabling HTTP headers.
-3. Broadcasts this status change to all open frontend client streams via **Server-Sent Events (SSE)**.
-4. **Fallback**: If the live stream is blocked, the frontend polls the database every 3 seconds with a cache-busting timestamp (`?t=Date.now()`).
+1. **Dynamic Domain Resolution**: Dynamically resolves the tracking domain using the request origin (`req.protocol` and `req.get('host')`) to support local testing as well as cloud deployment without environment variables configuration.
+2. **Robust Route Matching**: Matches `/api/email/track/:candidateId` and strips `.gif` programmatically to prevent dot-separator routing bugs.
+3. **CORS Headers**: Appends `Access-Control-Allow-Origin: *` to prevent mail client proxies from blocking the tracking pixel fetch.
+4. **SSE Status Broadcast**: Updates candidate status to `'Opened'` and logs the `openedAt` timestamp, then broadcasts this status change to all frontend client streams via **Server-Sent Events (SSE)**.
+5. **Fallback**: If the live stream is blocked, the frontend polls the database every 3 seconds with a cache-busting timestamp (`?t=Date.now()`).
 
 ### D. Gmail-Safe Pixel Injection (Anti-Clipping)
 Gmail clips emails over 102KB (commonly caused by large base64/SVG logo structures). If the tracking pixel sits at the bottom of the email, Gmail will clip it, preventing it from loading. We resolved this by injecting the pixel immediately after the opening `<body>` tag at the very top of the email body.
@@ -127,6 +129,14 @@ To align with professional company workflows, the email dispatch loop automatica
 - **Pure-JS Buffer Generation**: Uses `pdfkit` to compile the layout coordinates on the server-side, avoiding chromium-based headless browser packages that cause memory-limit crashes on Render's free tier.
 - **Style Inheritance**: Inherits the selected template theme (`Modern`, `Classic`, or `Minimal`), generating a PDF with branding headers, custom double-border dividing rules, styled tables for compensation and start dates, and confidentiality notices.
 - **Attachment Injection**: Compiles the PDF binary buffer in-memory and appends it to the Nodemailer/Resend attachments array under the candidate's specific name.
+
+### G. Database Fetching Speedups (Indexes & Lean Queries)
+- **Indexes**: Added MongoDB indexes on all foreign key fields (`campaignId` in Candidates and History, `companyId` and `templateId` in Campaigns and Templates) to optimize query scanning.
+- **Mongoose Lean**: Utilized `.lean()` on all read-only Mongoose queries to return plain JavaScript objects, reducing Node.js memory usage and boosting data retrieval speeds.
+
+### H. SEO & Core Web Vitals Optimization
+- **SEO Elements**: Added metadata descriptions, keyword tags, and OpenGraph social integration to `index.html`.
+- **Render blocking removal**: Shifted Google Fonts loading from CSS `@import` rules to HTML preconnect and `<link>` headers, reducing page paint latencies (FOUT/CLS) and improving page speed.
 
 ---
 
