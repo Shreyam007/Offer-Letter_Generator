@@ -275,6 +275,11 @@
     <p><strong>What it does:</strong> In Step 3 (Template Editor), the live preview panel on the right displays the exact details (Name, Salary, Role, Date) of the candidate you checked/selected in Step 2.</p>
     <p><strong>Code location:</strong> Selected candidate lookup in <code>TemplateEditor.jsx</code>.</p>
 
+    <h3>D. Wizard Progress Auto-Save (Draft Recovery)</h3>
+    <p><strong>What it does:</strong> Saves configuration progress automatically to prevent data loss on browser refresh, tab closure, or app disconnects.</p>
+    <p><strong>How it works:</strong> Any transition of steps (1 to 4) or selection of an active campaign is saved to <code>localStorage</code> under <code>offerflow_wizard_draft</code>. On page mount, the React context detects if a draft exists, checks if the campaign is still active in the database, and displays a warning-themed banner at the top of Step 1. Clicking "Resume Draft" automatically restores the campaign state, loads its candidates, and transitions to the correct step; clicking "Discard" deletes the draft. The draft is also cleaned up automatically on campaign dispatch or deletion.</p>
+    <p><strong>Code locations:</strong> React Context state and auto-save/restore hooks are in <code>AppContext.jsx</code> (under <code>AppProvider</code>). Recovery banner rendering is in <code>CsvUpload.jsx</code>.</p>
+
     <h2>💬 5. Quick Interview Answers</h2>
     <p><strong>Q: Why use Server-Sent Events (SSE) instead of standard WebSockets?</strong><br/>
     <em>A:</em> SSE is much simpler and runs over standard HTTP/2, requiring no extra libraries (like Socket.io). It is extremely lightweight for unidirectional real-time updates (server pushing open status updates to client).</p>
@@ -284,6 +289,9 @@
 
     <p><strong>Q: Why use a 1x1 transparent GIF instead of other formats like PNG?</strong><br/>
     <em>A:</em> GIFs are the smallest image files possible (only 43 bytes). They are supported by 100% of email clients and don't cause any visual alignment issues.</p>
+
+    <p><strong>Q: How does the Wizard Auto-Save work and handle stale drafts?</strong><br/>
+    <em>A:</em> It saves details (campaign ID and current step) in <code>localStorage</code> on state changes. To prevent stale drafts, the draft is validated against active database campaigns on mount, cleared automatically upon successful campaign dispatch (send), and cleared if the active campaign is deleted.</p>
 
   </div>
 
