@@ -13,7 +13,10 @@ const CsvUpload = () => {
     loadCampaigns,
     setCurrentCampaign,
     loadCandidates,
-    addActivity
+    addActivity,
+    draftToRestore,
+    restoreDraft,
+    discardDraft
   } = useApp();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -213,6 +216,65 @@ const CsvUpload = () => {
             <span className="step-label">Send Offers</span>
           </div>
         </div>
+
+        {/* Draft Recovery Banner */}
+        {draftToRestore && (
+          <div 
+            className="info-banner"
+            style={{
+              backgroundColor: 'var(--warning-bg)',
+              borderColor: 'var(--warning-border)',
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              borderRadius: 'var(--radius-sm)',
+              padding: '16px 18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginBottom: '4px',
+              width: '100%',
+              maxWidth: '920px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
+          >
+            <div 
+              className="info-banner-left"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                fontSize: '13px',
+                color: 'var(--text-main)',
+                fontWeight: '500'
+              }}
+            >
+              <AlertTriangle size={18} style={{ color: 'var(--warning-color)', flexShrink: 0 }} />
+              <span>
+                Unsaved Draft: Found progress for campaign <strong>{campaigns.find(c => c._id === draftToRestore.campaignId)?.name || 'Unknown'}</strong> at <strong>Step {draftToRestore.step}</strong>.
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                type="button"
+                onClick={restoreDraft}
+                className="btn btn-success"
+                style={{ padding: '6px 12px', fontSize: '12px', height: '32px' }}
+              >
+                Resume Draft
+              </button>
+              <button 
+                type="button"
+                onClick={discardDraft}
+                className="btn btn-secondary"
+                style={{ padding: '6px 12px', fontSize: '12px', height: '32px' }}
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Drag-and-drop box */}
         <form 

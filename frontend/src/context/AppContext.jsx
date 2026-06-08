@@ -24,6 +24,54 @@ export const AppProvider = ({ children }) => {
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [draftToRestore, setDraftToRestore] = useState(null);
+
+  // Auto-save progress on step or campaign changes
+  useEffect(() => {
+    if (currentCampaign) {
+      localStorage.setItem('offerflow_wizard_draft', JSON.stringify({
+        campaignId: currentCampaign._id,
+        step: step
+      }));
+    }
+  }, [step, currentCampaign]);
+
+  // Hook to check for drafts on load when campaigns change
+  useEffect(() => {
+    if (campaigns && campaigns.length > 0 && !draftToRestore && !currentCampaign) {
+      const saved = localStorage.getItem('offerflow_wizard_draft');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.campaignId && parsed.step) {
+            const exists = campaigns.some(c => c._id === parsed.campaignId);
+            if (exists) {
+              setDraftToRestore(parsed);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to parse wizard draft', e);
+        }
+      }
+    }
+  }, [campaigns, currentCampaign]);
+
+  const restoreDraft = async () => {
+    if (!draftToRestore) return;
+    const { campaignId, step: savedStep } = draftToRestore;
+    const camp = campaigns.find(c => c._id === campaignId);
+    if (camp) {
+      setCurrentCampaign(camp);
+      await loadCandidates(campaignId);
+      setStep(savedStep);
+      setDraftToRestore(null);
+    }
+  };
+
+  const discardDraft = () => {
+    localStorage.removeItem('offerflow_wizard_draft');
+    setDraftToRestore(null);
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -274,6 +322,8 @@ export const AppProvider = ({ children }) => {
         setCandidates([]);
         setSelectedCandidateIds([]);
         setStep(1);
+        localStorage.removeItem('offerflow_wizard_draft');
+        setDraftToRestore(null);
       }
     } catch (err) {
       console.error('Error deleting campaign:', err);
@@ -408,6 +458,8 @@ export const AppProvider = ({ children }) => {
       }
       const data = await res.json();
       await loadCampaigns();
+      localStorage.removeItem('offerflow_wizard_draft');
+      setDraftToRestore(null);
       return data;
     } catch (err) {
       console.error('Error sending offer letters:', err);
@@ -450,7 +502,10 @@ export const AppProvider = ({ children }) => {
         loadCampaigns,
         loading,
         theme,
-        toggleTheme
+        toggleTheme,
+        draftToRestore,
+        restoreDraft,
+        discardDraft
       }}
     >
       {children}
