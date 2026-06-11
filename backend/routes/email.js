@@ -69,6 +69,12 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
       if (style === 'Classic') {
         doc.font('Times-Roman');
 
+        // Draw double gold frame border
+        doc.save();
+        doc.rect(20, 20, 555.28, 801.89).strokeColor('#d4af37').lineWidth(2).stroke();
+        doc.rect(26, 26, 543.28, 789.89).strokeColor('#d4af37').lineWidth(0.5).stroke();
+        doc.restore();
+
         // Header
         doc.font('Times-Bold').fontSize(24).fillColor('#1e293b');
         doc.text(company.name.toUpperCase(), 50, 45, { align: 'center', width: 495 });
@@ -135,6 +141,11 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
 
       } else if (style === 'Minimal') {
         doc.font('Helvetica');
+
+        // Draw top brand bar (orange)
+        doc.save();
+        doc.rect(0, 0, 595.28, 6).fill('#f97316');
+        doc.restore();
 
         // Header logo & name
         if (logoBuffer) {
@@ -207,8 +218,8 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
         // Modern Style
         doc.font('Helvetica');
 
-        // Top brand bar
-        doc.rect(0, 0, 595.28, 8).fill('#0b3c95');
+        // Left brand accent bar
+        doc.rect(0, 0, 10, 841.89).fill('#0b3c95');
 
         // Header logo/name
         if (logoBuffer) {
@@ -249,8 +260,8 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
         }
 
         doc.save();
-        doc.rect(50, currentY, 495, 60).fill('#f8fafc');
-        doc.rect(50, currentY, 495, 60).strokeColor('#e2e8f0').lineWidth(1).stroke();
+        doc.rect(50, currentY, 495, 60).fill('#f0f7ff');
+        doc.rect(50, currentY, 495, 60).strokeColor('#bae6fd').lineWidth(1).stroke();
         doc.restore();
 
         doc.font('Helvetica-Bold').fontSize(9).fillColor('#64748b');

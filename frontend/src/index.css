@@ -1608,8 +1608,11 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Modern Style */
 .letter-sheet.style-modern {
-  border-top: 6px solid #0b3c95;
-  border-radius: 6px;
+  border-left: 8px solid var(--primary-color);
+  border-top: none;
+  background-color: #fafbfc;
+  border-radius: var(--radius-md);
+  padding: 40px;
 }
 
 .letter-sheet.style-modern .letter-header {
@@ -1648,10 +1651,10 @@ h1, h2, h3, h4, h5, h6 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
   padding: 18px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #bae6fd;
   margin-bottom: 32px;
 }
 
@@ -1680,22 +1683,26 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Classic Style */
 .letter-sheet.style-classic {
-  font-family: Georgia, serif;
-  color: #0f172a;
-  border-radius: 4px;
-  padding: 40px;
+  font-family: 'Georgia', serif;
+  color: #1e1b18;
+  background-color: #fdfbf7;
+  border: 2px solid #d4af37;
+  outline: 4px double #d4af37;
+  outline-offset: -12px;
+  border-radius: 2px;
+  padding: 48px;
 }
 
 .letter-sheet.style-classic .letter-header {
   text-align: center;
-  border-bottom: 3px double #94a3b8;
-  padding-bottom: 24px;
-  margin-bottom: 36px;
+  border-bottom: 3px double #c5a059;
+  padding-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .letter-sheet.style-classic .company-title {
   font-size: 24px;
-  font-family: Georgia, serif;
+  font-family: 'Georgia', serif;
   font-weight: bold;
   color: #1e293b;
   letter-spacing: 2px;
@@ -1715,16 +1722,18 @@ h1, h2, h3, h4, h5, h6 {
   text-align: justify;
   margin-bottom: 32px;
   white-space: pre-wrap;
-  color: #1e293b;
+  color: #1e1b18;
   line-height: 1.7;
 }
 
 .letter-sheet.style-classic .letter-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background-color: #f8fafc;
+  border-top: 3px double #cbd5e1;
+  border-bottom: 3px double #cbd5e1;
+  border-left: none;
+  border-right: none;
+  background-color: transparent;
   margin-bottom: 32px;
 }
 
@@ -1753,16 +1762,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .letter-sheet.style-classic .letter-sign {
-  margin-top: 40px;
+  margin-top: 32px;
   line-height: 1.6;
-  color: #1e293b;
+  color: #1e1b18;
+  font-size: 13px;
 }
 
 /* Minimal Style */
 .letter-sheet.style-minimal {
   font-family: 'Inter', sans-serif;
   color: #334155;
-  padding: 30px;
+  background-color: #ffffff;
+  border-top: 4px solid #f97316;
+  padding: 36px;
+  border-radius: 4px;
 }
 
 .letter-sheet.style-minimal .letter-header {
@@ -1776,33 +1789,49 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .letter-sheet.style-minimal .letter-date-ref {
-  font-size: 12px;
-  color: var(--text-light);
+  font-size: 11px;
+  color: #94a3b8;
   margin-bottom: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .letter-sheet.style-minimal .letter-content {
   margin-bottom: 24px;
   white-space: pre-wrap;
+  font-size: 12.5px;
+  color: #475569;
 }
 
 .letter-sheet.style-minimal .letter-stats-grid {
   display: flex;
-  gap: 32px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 20px;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 0;
   margin-bottom: 24px;
+  background: transparent;
+}
+
+.letter-sheet.style-minimal .letter-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .letter-sheet.style-minimal .letter-stat-label {
   font-size: 10px;
-  color: var(--text-light);
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .letter-sheet.style-minimal .letter-stat-value {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #0f172a;
+  color: #1e293b;
 }
 
 /* Preview & Send Dispatch Panel */
