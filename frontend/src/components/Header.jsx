@@ -1,4 +1,4 @@
-// OfferFlow HR Header Component with Theme Selector
+// OnboardGo Header Component with Theme Selector
 import React from 'react';
 import { Bell, HelpCircle, Sun, Moon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -21,7 +21,7 @@ const Header = ({ activeTab, setActiveTab }) => {
           style={{ cursor: 'pointer' }}
           onClick={() => handleTabClick('workflow')}
         >
-          TalentDraft
+          OnboardGo
         </h1>
         
         <div className="header-tabs">

@@ -1,11 +1,11 @@
-# 🚀 TalentDraft — Short & Easy Interview Prep Guide
+# 🚀 OnboardGo — Short & Easy Interview Prep Guide
 
 This guide is made for you to quickly read, understand, and explain the project in an interview. Everything is written in simple, easy-to-understand language.
 
 ---
 
 ## 💡 1. What is this project? (Simple Overview)
-**TalentDraft** is a bulk offer letter generator tool. It helps HR teams send hundreds of personalized offer letters to candidates in one go.
+**OnboardGo** is a bulk offer letter generator tool. It helps HR teams send hundreds of personalized offer letters to candidates in one go.
 1. **Upload**: HR uploads a CSV list of candidates.
 2. **Review**: HR reviews, edits, and selects candidates in a spreadsheet grid.
 3. **Template**: HR writes a letter template using drag-and-drop variables (like `{{Name}}`, `{{Role}}`).
@@ -81,7 +81,7 @@ This guide is made for you to quickly read, understand, and explain the project 
 
 ### D. Wizard Progress Auto-Save (Draft Recovery)
 - **What it does**: Saves configuration progress automatically to prevent data loss on browser refresh, tab closure, or app disconnects.
-- **How it works**: Any transition of steps (1 to 4) or selection of an active campaign is saved to `localStorage` under `talentdraft_wizard_draft`. On page mount, the React context detects if a draft exists, checks if the campaign is still active in the database, and displays a recovery banner.
+- **How it works**: Any transition of steps (1 to 4) or selection of an active campaign is saved to `localStorage` under `onboardgo_wizard_draft`. On page mount, the React context detects if a draft exists, checks if the campaign is still active in the database, and displays a recovery banner.
 - **Where to find in code**:
   - React Context state and recovery hooks: [AppContext.jsx](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/context/AppContext.jsx)
 

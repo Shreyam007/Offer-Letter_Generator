@@ -1,7 +1,7 @@
 {
   "name": "offerflow-backend",
   "version": "1.0.0",
-  "description": "Backend API for OfferFlow HR Offer Letter Generator",
+  "description": "Backend API for OnboardGo Offer Letter Generator",
   "main": "server.js",
   "type": "module",
   "scripts": {

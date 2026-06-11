@@ -35,7 +35,7 @@ app.use('/api/email', emailRoutes);
 
 // Health check
 app.get('/', (req, res) => {
-  res.send('TalentDraft API is running...');
+  res.send('OnboardGo API is running...');
 });
 
 // New ready endpoint for frontend to know when DB is connected

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TalentDraft — Complete Project Documentation & System Manual</title>
+  <title>OnboardGo — Complete Project Documentation & System Manual</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
 
@@ -203,7 +203,7 @@
 
     <!-- COVER PAGE -->
     <div class="cover-page">
-      <h3 class="cover-logo">TALENTDRAFT</h3>
+      <h3 class="cover-logo">ONBOARDGO</h3>
       <div class="cover-subtitle">Enterprise Candidate Onboarding & Dispatch Platform</div>
       <h1 class="cover-title">PROJECT DOCUMENTATION & SYSTEM MANUAL</h1>
       <p>A comprehensive technical report on the design, architecture, and implementation of a real-time bulk email campaign system.</p>
@@ -219,7 +219,7 @@
     <!-- 1. ABSTRACT -->
     <h2>1. Abstract</h2>
     <p>
-      <strong>TalentDraft</strong> is a web application designed to automate and optimize the candidate onboarding process for HR coordinators. The platform allows organizations to upload candidate data spreadsheets, perform verification and inline edits, dynamically customize layout templates (Modern, Classic, Minimal), and dispatch personalized PDF/HTML offer letters. 
+      <strong>OnboardGo</strong> is a web application designed to automate and optimize the candidate onboarding process for HR coordinators. The platform allows organizations to upload candidate data spreadsheets, perform verification and inline edits, dynamically customize layout templates (Modern, Classic, Minimal), and dispatch personalized PDF/HTML offer letters. 
     </p>
     <p>
       The application incorporates a <strong>real-time status tracking engine</strong> that registers open events and timestamps using both a transparent tracking pixel in sent emails and a dedicated Candidate Interactive Portal. It updates candidate status logs in the History drawer immediately without page reloads using <strong>Server-Sent Events (SSE)</strong>.
@@ -418,7 +418,7 @@ body.dark-mode { --bg-app: #0f172a; --bg-card: #1e293b; }</code></pre>
       - <strong>Dynamic Favicons:</strong> Implemented dynamic browser favicon rendering in the React frontend. Both the admin dashboard (via a <code>useEffect</code> inside <code>AppContext.jsx</code> watching <code>selectedCompany</code>) and the public candidate portal (via <code>PublicOfferPortal.jsx</code> watching <code>offerData</code>) dynamically swap the browser tab's favicon link to match the SVG or raster base64 logo of the active company context.
     </p>
     <p>
-      - <strong>Branding Architecture:</strong> Renamed all brand assets from "OfferFlow HR" to "TalentDraft", aligning titles, meta descriptions, search tags, headers, and footers across the MERN repository.
+      - <strong>Branding Architecture:</strong> Renamed all brand assets from "OfferFlow HR" to "OnboardGo", aligning titles, meta descriptions, search tags, headers, and footers across the MERN repository.
     </p>
 
     <!-- 7. TROUBLESHOOTING LOGS -->
@@ -435,7 +435,7 @@ body.dark-mode { --bg-app: #0f172a; --bg-card: #1e293b; }</code></pre>
     <!-- 8. CONCLUSION -->
     <h2>8. Conclusion & Future Scope</h2>
     <p>
-      TalentDraft successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).
+      OnboardGo successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).
     </p>
   </div>
 

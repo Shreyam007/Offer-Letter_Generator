@@ -422,7 +422,7 @@ const PublicOfferPortal = ({ candidateId }) => {
 
       {/* Footer bar */}
       <footer style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e2e8f0', padding: '16px', textAlign: 'center', fontSize: '12px', color: '#64748b' }}>
-        Secure connection provided by {company?.name || 'Company'} Portal. Powered by TalentDraft.
+        Secure connection provided by {company?.name || 'Company'} Portal. Powered by OnboardGo.
       </footer>
 
     </div>

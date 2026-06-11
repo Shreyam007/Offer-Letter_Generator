@@ -26,7 +26,7 @@ flow = []
 
 for p in paras:
     # treat lines starting with '- ' as bulleted group; else paragraph
-    if p.startswith('OfferFlow HR —'):
+    if p.startswith('OfferFlow HR —') or p.startswith('TalentDraft —') or p.startswith('OnboardGo —') or p.startswith('# OnboardGo —') or p.startswith('# TalentDraft —') or p.startswith('# OfferFlow HR —'):
         flow.append(Paragraph(p, ParagraphStyle('title', parent=heading, fontSize=18, spaceAfter=12)))
     else:
         # replace markdown code inline backticks with nothing for simplicity

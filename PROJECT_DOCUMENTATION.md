@@ -1,11 +1,11 @@
-# 🚀 TalentDraft — Project Documentation & System Manual
+# 🚀 OnboardGo — Project Documentation & System Manual
 
-This file provides comprehensive technical documentation for the **TalentDraft** project. It details the system architecture, folder breakdown, database schemas, and implementation design for features like Dark Mode, Real-Time Email Tracking (SSE), and Gmail Anti-Clipping.
+This file provides comprehensive technical documentation for the **OnboardGo** project. It details the system architecture, folder breakdown, database schemas, and implementation design for features like Dark Mode, Real-Time Email Tracking (SSE), and Gmail Anti-Clipping.
 
 ---
 
 ## 1. Abstract
-**TalentDraft** is a MERN-stack bulk offer letter generator dashboard. It automates the HR onboarding workflow by allowing coordinators to upload candidate data spreadsheets (CSV), clean and validate candidate records in a spreadsheet grid, customize document templates (Modern, Classic, Minimal) using dynamic placeholder variables, and dispatch offer letters via SMTP. 
+**OnboardGo** is a MERN-stack bulk offer letter generator dashboard. It automates the HR onboarding workflow by allowing coordinators to upload candidate data spreadsheets (CSV), clean and validate candidate records in a spreadsheet grid, customize document templates (Modern, Classic, Minimal) using dynamic placeholder variables, and dispatch offer letters via SMTP. 
 
 The application incorporates a **real-time status tracking engine** that registers open events and timestamps using both a transparent tracking pixel in sent emails and a dedicated Candidate Interactive Portal. It updates candidate status logs in the History drawer immediately without page reloads using **Server-Sent Events (SSE)**.
 
@@ -141,7 +141,7 @@ To align with professional company workflows, the email dispatch loop automatica
 
 ### I. Dynamic Tab Favicon & Branding Renaming
 - **Dynamic Favicons**: Implemented dynamic browser favicon rendering in the React frontend. Both the admin dashboard (via a `useEffect` inside `AppContext.jsx` watching `selectedCompany`) and the public candidate portal (via `PublicOfferPortal.jsx` watching `offerData`) dynamically swap the browser tab's favicon link to match the SVG or raster base64 logo of the active company context.
-- **Branding Architecture**: Renamed all brand assets from "OfferFlow HR" to "TalentDraft", aligning titles, meta descriptions, search tags, headers, and footers across the MERN repository.
+- **Branding Architecture**: Renamed all brand assets from "OfferFlow HR" to "OnboardGo", aligning titles, meta descriptions, search tags, headers, and footers across the MERN repository.
 
 ---
 
@@ -152,4 +152,4 @@ To align with professional company workflows, the email dispatch loop automatica
 ---
 
 ## 8. Conclusion
-TalentDraft successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).
+OnboardGo successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).
