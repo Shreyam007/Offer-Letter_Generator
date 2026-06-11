@@ -1,13 +1,13 @@
-# 🚀 OfferFlow HR — Project Documentation & System Manual
+# 🚀 TalentDraft — Project Documentation & System Manual
 
-This file provides comprehensive technical documentation for the **OfferFlow HR** project. It details the system architecture, folder breakdown, database schemas, and implementation design for features like Dark Mode, Real-Time Email Tracking (SSE), and Gmail Anti-Clipping.
+This file provides comprehensive technical documentation for the **TalentDraft** project. It details the system architecture, folder breakdown, database schemas, and implementation design for features like Dark Mode, Real-Time Email Tracking (SSE), and Gmail Anti-Clipping.
 
 ---
 
 ## 1. Abstract
-**OfferFlow HR** is a MERN-stack bulk offer letter generator dashboard. It automates the HR onboarding workflow by allowing coordinators to upload candidate data spreadsheets (CSV), clean and validate candidate records in a spreadsheet grid, customize document templates (Modern, Classic, Minimal) using dynamic placeholder variables, and dispatch offer letters via SMTP. 
+**TalentDraft** is a MERN-stack bulk offer letter generator dashboard. It automates the HR onboarding workflow by allowing coordinators to upload candidate data spreadsheets (CSV), clean and validate candidate records in a spreadsheet grid, customize document templates (Modern, Classic, Minimal) using dynamic placeholder variables, and dispatch offer letters via SMTP. 
 
-The application incorporates a **real-time email open tracking engine** that registers open events and timestamps using a transparent tracking pixel. It updates candidate status logs in the History drawer immediately without page reloads using **Server-Sent Events (SSE)**.
+The application incorporates a **real-time status tracking engine** that registers open events and timestamps using both a transparent tracking pixel in sent emails and a dedicated Candidate Interactive Portal. It updates candidate status logs in the History drawer immediately without page reloads using **Server-Sent Events (SSE)**.
 
 ---
 
@@ -92,8 +92,9 @@ Stores company branding info and SMTP configurations.
 * `department`: Team Name (String)
 * `salary`: Compensation (String)
 * `joiningDate`: Start Date (String)
-* `status`: Tracking status (String: Pending, Validated, Invalid Email, Sending, Sent, Failed, Opened)
+* `status`: Tracking status (String: Pending, Validated, Invalid Email, Sending, Sent, Failed, Opened, Accepted)
 * `openedAt`: Email open timestamp (Date)
+* `acceptedAt`: Candidate acceptance timestamp (Date)
 * `error`: Transmission error logs (String)
 * `customFields`: Extended CSV properties mapping (Map of Strings)
 
@@ -108,15 +109,15 @@ In Step 2 of the wizard, candidate records are shown in a spreadsheet-style grid
 - **Scaling**: To display a pixel-perfect A4 sheet in the browser ([TemplateEditor.jsx](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/components/TemplateEditor.jsx)), we use a `ResizeObserver` that watches the preview panel size and applies `transform: scale(...)` to scale the A4 preview box dynamically without breaking text wraps, margins, or header spacing.
 - **Dynamic Bindings**: The editor binds the selected candidate's real credentials (name, email, role, department, salary, start date) dynamically in the preview sheet across all three styles (**Modern**, **Classic**, **Minimal**). The date and reference codes are computed dynamically to match the backend PDF generator.
 
-### C. Real-time Open Tracking (Server-Sent Events)
-During dispatch, our mailing engine appends an image tag to the email template:
-`[Host_Domain]/api/email/track/:candidateId.gif`
-When the email is opened, the client requests this GIF. The backend route:
-1. **Dynamic Domain Resolution**: Dynamically resolves the tracking domain using the request origin (`req.protocol` and `req.get('host')`) to support local testing as well as cloud deployment without environment variables configuration.
-2. **Robust Route Matching**: Matches `/api/email/track/:candidateId` and strips `.gif` programmatically to prevent dot-separator routing bugs.
-3. **CORS Headers**: Appends `Access-Control-Allow-Origin: *` to prevent mail client proxies from blocking the tracking pixel fetch.
-4. **SSE Status Broadcast**: Updates candidate status to `'Opened'` and logs the `openedAt` timestamp, then broadcasts this status change to all frontend client streams via **Server-Sent Events (SSE)**.
-5. **Fallback**: If the live stream is blocked, the frontend polls the database every 3 seconds with a cache-busting timestamp (`?t=Date.now()`).
+### C. Real-time Status Tracking & Interactive Candidate Portal (Server-Sent Events)
+To ensure tracking is 100% reliable and immune to aggressive caching or blocking by mail proxy servers (e.g., Gmail's proxy, Outlook's proxy), the system employs a hybrid tracking mechanism:
+1. **Candidate Interactive Portal**: A secure public-facing portal ([PublicOfferPortal.jsx](file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/components/PublicOfferPortal.jsx)) is deployed. When candidates click their unique view link, the portal triggers an API call `/api/email/track/:candidateId` on mount. This ensures the offer status changes to `'Opened'` even if pixel-tracking is blocked.
+2. **Tracking Pixel**: An invisible pixel `<img src="[Host_Domain]/api/email/track/:candidateId.gif" />` is injected near the top of the HTML email template (Gmail-safe position).
+3. **Dynamic Domain Resolution**: Automatically resolves the tracking URL host using the request's origin (`req.protocol` and `req.get('host')`), removing the need for hardcoded environment variables.
+4. **Robust Route Matching**: Backend route matches `/api/email/track/:candidateId` and automatically strips `.gif` extensions programmatically to avoid dot-separator routing issues.
+5. **CORS Headers**: Serves with `Access-Control-Allow-Origin: *` headers, allowing cross-origin requests from mail proxies and remote portal contexts.
+6. **SSE Status Broadcast**: Once an open/access event is recorded, the backend updates MongoDB with the `Opened` status and `openedAt` timestamp, and immediately broadcasts the update to all active admin dashboards over **Server-Sent Events (SSE)** for zero-refresh UI sync.
+7. **Digital Offer Acceptance**: The interactive candidate portal features a one-click digital acceptance button. Clicking this triggers `POST /api/email/public/candidate-offer/:candidateId/accept`, which transitions the candidate's status to `Accepted`, stamps the exact date, updates campaign metrics, and triggers a real-time SSE broadcast back to the admin dashboard.
 
 ### D. Gmail-Safe Pixel Injection (Anti-Clipping)
 Gmail clips emails over 102KB (commonly caused by large base64/SVG logo structures). If the tracking pixel sits at the bottom of the email, Gmail will clip it, preventing it from loading. We resolved this by injecting the pixel immediately after the opening `<body>` tag at the very top of the email body.
@@ -138,6 +139,10 @@ To align with professional company workflows, the email dispatch loop automatica
 - **SEO Elements**: Added metadata descriptions, keyword tags, and OpenGraph social integration to `index.html`.
 - **Render blocking removal**: Shifted Google Fonts loading from CSS `@import` rules to HTML preconnect and `<link>` headers, reducing page paint latencies (FOUT/CLS) and improving page speed.
 
+### I. Dynamic Tab Favicon & Branding Renaming
+- **Dynamic Favicons**: Implemented dynamic browser favicon rendering in the React frontend. Both the admin dashboard (via a `useEffect` inside `AppContext.jsx` watching `selectedCompany`) and the public candidate portal (via `PublicOfferPortal.jsx` watching `offerData`) dynamically swap the browser tab's favicon link to match the SVG or raster base64 logo of the active company context.
+- **Branding Architecture**: Renamed all brand assets from "OfferFlow HR" to "TalentDraft", aligning titles, meta descriptions, search tags, headers, and footers across the MERN repository.
+
 ---
 
 ## 7. Troubleshooting & Layout Refactorings
@@ -147,4 +152,4 @@ To align with professional company workflows, the email dispatch loop automatica
 ---
 
 ## 8. Conclusion
-OfferFlow HR successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).
+TalentDraft successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).

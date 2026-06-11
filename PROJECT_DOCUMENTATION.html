@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OfferFlow HR — Complete Project Documentation & System Manual</title>
+  <title>TalentDraft — Complete Project Documentation & System Manual</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
 
@@ -203,7 +203,7 @@
 
     <!-- COVER PAGE -->
     <div class="cover-page">
-      <h3 class="cover-logo">OFFERFLOW HR</h3>
+      <h3 class="cover-logo">TALENTDRAFT</h3>
       <div class="cover-subtitle">Enterprise Candidate Onboarding & Dispatch Platform</div>
       <h1 class="cover-title">PROJECT DOCUMENTATION & SYSTEM MANUAL</h1>
       <p>A comprehensive technical report on the design, architecture, and implementation of a real-time bulk email campaign system.</p>
@@ -219,16 +219,16 @@
     <!-- 1. ABSTRACT -->
     <h2>1. Abstract</h2>
     <p>
-      <strong>OfferFlow HR</strong> is a web application designed to automate and optimize the candidate onboarding process for HR coordinators. The platform allows organizations to upload candidate data spreadsheets, perform verification and inline edits, dynamically customize layout templates (Modern, Classic, Minimal), and dispatch personalized PDF/HTML offer letters. 
+      <strong>TalentDraft</strong> is a web application designed to automate and optimize the candidate onboarding process for HR coordinators. The platform allows organizations to upload candidate data spreadsheets, perform verification and inline edits, dynamically customize layout templates (Modern, Classic, Minimal), and dispatch personalized PDF/HTML offer letters. 
     </p>
     <p>
-      Crucially, the system features a <strong>real-time email open tracking engine</strong> that updates candidate statuses to "Opened" with exact timestamps the moment a candidate views their offer in an email client. This platform uses the MERN stack (MongoDB, Express, React, Node.js) and leverages Server-Sent Events (SSE) to deliver updates to the client without page refreshes.
+      The application incorporates a <strong>real-time status tracking engine</strong> that registers open events and timestamps using both a transparent tracking pixel in sent emails and a dedicated Candidate Interactive Portal. It updates candidate status logs in the History drawer immediately without page reloads using <strong>Server-Sent Events (SSE)</strong>.
     </p>
 
     <!-- 2. INTRODUCTION -->
     <h2>2. Introduction & Objectives</h2>
     <p>
-      Traditional candidate onboarding relies on manual letter generation, individual attachment drafting, and lack of delivery status transparency. The objectives of this project are:
+      Traditional candidate onboarding relies on manual template construction, individual mailing, and lack of status transparency. The objectives of this project are:
     </p>
     <ul>
       <li><strong>Automation:</strong> Automate document merging by mapping spreadsheet data directly into pre-styled templates.</li>
@@ -358,8 +358,9 @@ role: { type: String },
 department: { type: String },
 salary: { type: String },
 joiningDate: { type: String },
-status: { type: String, enum: ['Pending', 'Validated', 'Invalid Email', 'Sending', 'Sent', 'Failed', 'Opened'], default: 'Pending' },
+status: { type: String, enum: ['Pending', 'Validated', 'Invalid Email', 'Sending', 'Sent', 'Failed', 'Opened', 'Accepted'], default: 'Pending' },
 openedAt: { type: Date },
+acceptedAt: { type: Date },
 error: { type: String },
 customFields: { type: Map, of: String }</code></pre>
 
@@ -376,21 +377,18 @@ customFields: { type: Map, of: String }</code></pre>
       In Step 3, the editor provides an A4-proportioned paper sheet. To display it accurately alongside the configuration bar, we use a <code>ResizeObserver</code> in React. It calculates the viewport dimensions of the preview box and applies a CSS scale transform (e.g. <code>transform: scale(0.65)</code>) to fit the page without altering internal line breaks, font ratios, or margins.
     </p>
 
-    <h3>C. Real-time Open Tracking (Server-Sent Events)</h3>
+    <h3>C. Real-time Status Tracking & Interactive Candidate Portal (Server-Sent Events)</h3>
     <p>
-      When campaigns are sent, our email router embeds a tracking pixel:
-    </p>
-    <pre><code>&lt;img src="https://offer-letter-generator-whu4.onrender.com/api/email/track/:candidateId.gif" ... /&gt;</code></pre>
-    <p>
-      When the client loads the mail, the request hits the tracking route in <code>email.js</code>. The backend:
+      To ensure tracking is 100% reliable and immune to aggressive caching or blocking by mail proxy servers (e.g., Gmail's proxy, Outlook's proxy), the system employs a hybrid tracking mechanism:
     </p>
     <ol>
-      <li>Updates the candidate's status to <code>'Opened'</code> and saves the <code>openedAt</code> timestamp.</li>
-      <li>Serves a 43-byte transparent tracking GIF with headers that prevent caching:
-        <pre><code>'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache'</code></pre>
-      </li>
-      <li>Pushes this event to active frontend client pages using an open **Server-Sent Events (SSE)** channel (<code>GET /track/events</code>). The client updates the status instantly.</li>
-      <li>If the SSE stream fails, a fallback polling hook automatically fetches the database every 3 seconds using a cache-busting timestamp (<code>?t=Date.now()</code>).</li>
+      <li><strong>Candidate Interactive Portal:</strong> A secure public-facing portal (<code>PublicOfferPortal.jsx</code>) is deployed. When candidates click their unique view link, the portal triggers an API call <code>/api/email/track/:candidateId</code> on mount. This ensures the offer status changes to <code>'Opened'</code> even if pixel-tracking is blocked.</li>
+      <li><strong>Tracking Pixel:</strong> An invisible pixel image is injected near the top of the HTML email template (Gmail-safe position) that points to <code>/api/email/track/:candidateId.gif</code>.</li>
+      <li><strong>Dynamic Domain Resolution:</strong> Automatically resolves the tracking URL host using the request's origin (<code>req.protocol</code> and <code>req.get('host')</code>), removing the need for hardcoded environment variables.</li>
+      <li><strong>Robust Route Matching:</strong> Backend route matches <code>/api/email/track/:candidateId</code> and automatically strips <code>.gif</code> extensions programmatically to avoid dot-separator routing issues.</li>
+      <li><strong>CORS Headers:</strong> Serves with <code>Access-Control-Allow-Origin: *</code> headers, allowing cross-origin requests from mail proxies and remote portal contexts.</li>
+      <li><strong>SSE Status Broadcast:</strong> Once an open/access event is recorded, the backend updates MongoDB with the <code>Opened</code> status and <code>openedAt</code> timestamp, and immediately broadcasts the update to all active admin dashboards over <strong>Server-Sent Events (SSE)</strong> for zero-refresh UI sync.</li>
+      <li><strong>Digital Offer Acceptance:</strong> The interactive candidate portal features a one-click digital acceptance button. Clicking this triggers <code>POST /api/email/public/candidate-offer/:candidateId/accept</code>, which transitions the candidate's status to <code>Accepted</code>, stamps the exact date, updates campaign metrics, and triggers a real-time SSE broadcast back to the admin dashboard.</li>
     </ol>
 
     <h3>D. Gmail-Safe Pixel Injection (Anti-Clipping)</h3>
@@ -415,6 +413,14 @@ body.dark-mode { --bg-app: #0f172a; --bg-card: #1e293b; }</code></pre>
       <li><strong>Dynamic Data Binding:</strong> Values are compiled and layout elements dynamically adapt based on candidate parameters. Multi-page flows automatically insert page breaks when contents overflow standard A4 layouts.</li>
     </ul>
 
+    <h3>I. Dynamic Tab Favicon & Branding Renaming</h3>
+    <p>
+      - <strong>Dynamic Favicons:</strong> Implemented dynamic browser favicon rendering in the React frontend. Both the admin dashboard (via a <code>useEffect</code> inside <code>AppContext.jsx</code> watching <code>selectedCompany</code>) and the public candidate portal (via <code>PublicOfferPortal.jsx</code> watching <code>offerData</code>) dynamically swap the browser tab's favicon link to match the SVG or raster base64 logo of the active company context.
+    </p>
+    <p>
+      - <strong>Branding Architecture:</strong> Renamed all brand assets from "OfferFlow HR" to "TalentDraft", aligning titles, meta descriptions, search tags, headers, and footers across the MERN repository.
+    </p>
+
     <!-- 7. TROUBLESHOOTING LOGS -->
     <h2>7. Troubleshooting & Layout Refactorings</h2>
     <ul>
@@ -429,7 +435,7 @@ body.dark-mode { --bg-app: #0f172a; --bg-card: #1e293b; }</code></pre>
     <!-- 8. CONCLUSION -->
     <h2>8. Conclusion & Future Scope</h2>
     <p>
-      OfferFlow HR successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).
+      TalentDraft successfully automates document merging and email tracking, providing an easy-to-use platform for HR teams. Future scope includes adding support for SMS/WhatsApp offer alerts, integration with applicant tracking systems (like Greenhouse or Workday), and multi-stage signature signing (DocuSign integrations).
     </p>
   </div>
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OfferFlow HR — Easy Interview Prep Guide</title>
+  <title>TalentDraft — Easy Interview Prep Guide</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap');
 
@@ -173,16 +173,16 @@
       <strong>🖨️ PDF Instructions:</strong> Open this file in Chrome/Edge, press <strong>Ctrl + P</strong>, change destination to <strong>"Save as PDF"</strong>, ensure "Background graphics" is <strong>checked</strong>, and click Save.
     </div>
 
-    <h1>🚀 OfferFlow HR — Short & Easy Interview Prep Guide</h1>
+    <h1>🚀 TalentDraft — Short & Easy Interview Prep Guide</h1>
     <p>This guide is made for you to quickly read, understand, and explain the project in an interview. Everything is written in simple, easy-to-understand language.</p>
     
     <h2>💡 1. What is this project? (Simple Overview)</h2>
-    <p><strong>OfferFlow HR</strong> is a bulk offer letter generator tool. It helps HR teams send hundreds of personalized offer letters to candidates in one go.</p>
+    <p><strong>TalentDraft</strong> is a bulk offer letter generator tool. It helps HR teams send hundreds of personalized offer letters to candidates in one go.</p>
     <ul>
       <li><strong>Upload:</strong> HR uploads a CSV list of candidates.</li>
       <li><strong>Review:</strong> HR reviews, edits, and selects candidates in a spreadsheet grid.</li>
       <li><strong>Template:</strong> HR writes a letter template using drag-and-drop variables (like <code>{{Name}}</code>, <code>{{Role}}</code>).</li>
-      <li><strong>Send & Track:</strong> The app sends emails to all candidates and tracks in real-time when each candidate opens their mail.</li>
+      <li><strong>Send & Track:</strong> The app sends emails to all candidates containing official offer letter PDFs and secure, interactive view links. It tracks in real-time when each candidate opens their email/portal or digitally accepts their offer.</li>
     </ul>
 
     <h2>📂 2. Project Sections — Where is the code?</h2>
@@ -208,7 +208,7 @@
         </ul>
       </div>
       <div class="file-item">
-        <span class="file-name">routes/campaigns.js</span> — CSV ingestion, candidate CRUD, and inline editing.
+        <span class="file-name">routes/campaigns.js</span> — CSV Ingestion, Candidate CRUD, and inline editing.
       </div>
       <div class="file-item">
         <span class="file-name">routes/email.js</span> — Sending email loop, tracking pixel requests, and SSE push notification events.
@@ -218,10 +218,10 @@
     <h3>📁 Frontend (React SPA & CSS)</h3>
     <div class="file-tree">
       <div class="file-item">
-        <span class="file-name">App.jsx</span> — Main dashboard page router.
+        <span class="file-name">App.jsx</span> — Main dashboard page router & dynamic URL public portal route loader.
       </div>
       <div class="file-item">
-        <span class="file-name">context/AppContext.jsx</span> — Global React state (campaigns, candidate selection, theme status, API endpoints).
+        <span class="file-name">context/AppContext.jsx</span> — Global React state (campaigns, candidate selection, theme status, dynamic favicon updater, API endpoints).
       </div>
       <div class="file-item">
         <span class="file-name">index.css</span> — Vanilla CSS style rules & Dark Mode color variables.
@@ -244,6 +244,9 @@
       <div class="file-item">
         <span class="file-name">components/SettingsTab.jsx</span> — Configure company branding and SMTP email servers.
       </div>
+      <div class="file-item">
+        <span class="file-name">components/PublicOfferPortal.jsx</span> — Candidate interactive portal where candidates view, accept, or download their offer letter.
+      </div>
     </div>
 
     <h2>🎨 3. Dark Mode (How it works & code locations)</h2>
@@ -256,14 +259,13 @@
 
     <h2>⚡ 4. New Added Features (How they work & code locations)</h2>
 
-    <h3>A. Real-Time Email Open Tracking (Server-Sent Events)</h3>
-    <p><strong>What it does:</strong> Changes status to "Opened" instantly when Gmail is opened.</p>
+    <h3>A. Real-Time Status Tracking & Interactive Candidate Portal (Server-Sent Events)</h3>
+    <p><strong>What it does:</strong> Tracks email opens and candidate portal access in real-time, working even if standard tracking pixels are blocked or cached by aggressive mail proxy servers (like Gmail's proxy).</p>
     <ul>
-      <li>We place an invisible 1x1 image (pixel) at the top of the email body.</li>
-      <li>Opening the email triggers a request for this image from our backend.</li>
-      <li>The backend updates candidate status to "Opened" and broadcasts it to the frontend via a live stream connection (SSE / EventSource).</li>
-      <li><strong>Fallback:</strong> If the live stream drops, the frontend polls the database every 3 seconds with a cache-busting query (<code>?t=Date.now()</code>).</li>
-      <li><strong>Code locations:</strong> Backend router & SSE: <code>email.js</code> (<code>/track/events</code> and <code>/track/:candidateId.gif</code>). Frontend connection: <code>HistoryTab.jsx</code> (lines 44-62).</li>
+      <li><strong>Hybrid Open Tracking:</strong> Employs both an invisible 1x1 GIF pixel inside the HTML email body and a secure candidate portal. Opening the email or loading the portal triggers a request to <code>/api/email/track/:candidateId</code>, which logs the <code>Opened</code> status and <code>openedAt</code> timestamp.</li>
+      <li><strong>SSE Connection:</strong> The backend updates candidate status to "Opened" and broadcasts it to the frontend via a live stream connection (SSE / EventSource).</li>
+      <li><strong>Digital Offer Acceptance:</strong> Candidates can digitally sign and accept their offer on the portal with a one-click button. This saves their <code>Accepted</code> status and <code>acceptedAt</code> timestamp in MongoDB and broadcasts the acceptance update to the admin dashboard instantly.</li>
+      <li><strong>Code locations:</strong> Backend tracking & SSE: <code>email.js</code>. Frontend SSE listener: <code>AppContext.jsx</code>. Candidate Portal: <code>PublicOfferPortal.jsx</code>.</li>
     </ul>
 
     <h3>B. Gmail-Safe Pixel Injection (Anti-Clipping)</h3>
@@ -277,8 +279,12 @@
 
     <h3>D. Wizard Progress Auto-Save (Draft Recovery)</h3>
     <p><strong>What it does:</strong> Saves configuration progress automatically to prevent data loss on browser refresh, tab closure, or app disconnects.</p>
-    <p><strong>How it works:</strong> Any transition of steps (1 to 4) or selection of an active campaign is saved to <code>localStorage</code> under <code>offerflow_wizard_draft</code>. On page mount, the React context detects if a draft exists, checks if the campaign is still active in the database, and displays a warning-themed banner at the top of Step 1. Clicking "Resume Draft" automatically restores the campaign state, loads its candidates, and transitions to the correct step; clicking "Discard" deletes the draft. The draft is also cleaned up automatically on campaign dispatch or deletion.</p>
-    <p><strong>Code locations:</strong> React Context state and auto-save/restore hooks are in <code>AppContext.jsx</code> (under <code>AppProvider</code>). Recovery banner rendering is in <code>CsvUpload.jsx</code>.</p>
+    <p><strong>How it works:</strong> Any transition of steps (1 to 4) or selection of an active campaign is saved to <code>localStorage</code> under <code>talentdraft_wizard_draft</code>. On page mount, the React context detects if a draft exists, checks if the campaign is still active in the database, and displays a recovery banner.</p>
+    <p><strong>Code locations:</strong> React Context state and recovery hooks are in <code>AppContext.jsx</code>.</p>
+
+    <h3>E. Dynamic Browser Tab Favicon Swapper</h3>
+    <p><strong>What it does:</strong> Browser tab favicons are updated dynamically to display the selected company's logo branding, rather than a default logo, to customize the experience for both admins and candidates.</p>
+    <p><strong>Code locations:</strong> Admin Dashboard swapper hook is in <code>AppContext.jsx</code>. Candidate Portal swapper hook is in <code>PublicOfferPortal.jsx</code>.</p>
 
     <h2>💬 5. Quick Interview Answers</h2>
     <p><strong>Q: Why use Server-Sent Events (SSE) instead of standard WebSockets?</strong><br/>
@@ -290,8 +296,8 @@
     <p><strong>Q: Why use a 1x1 transparent GIF instead of other formats like PNG?</strong><br/>
     <em>A:</em> GIFs are the smallest image files possible (only 43 bytes). They are supported by 100% of email clients and don't cause any visual alignment issues.</p>
 
-    <p><strong>Q: How does the Wizard Auto-Save work and handle stale drafts?</strong><br/>
-    <em>A:</em> It saves details (campaign ID and current step) in <code>localStorage</code> on state changes. To prevent stale drafts, the draft is validated against active database campaigns on mount, cleared automatically upon successful campaign dispatch (send), and cleared if the active campaign is deleted.</p>
+    <p><strong>Q: How do you bypass email client image proxies when tracking opens?</strong><br/>
+    <em>A:</em> We deploy a hybrid tracking method. Instead of relying solely on tracking pixels (which are cached or blocked by Gmail and Outlook proxies), we send the candidate a secure, direct portal link. The moment they open their portal page, we trigger a direct REST tracking request to the API, immediately syncing their status as "Opened".</p>
 
   </div>
 
