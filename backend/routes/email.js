@@ -93,13 +93,17 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
         doc.text(`Ref: OF-${new Date().getFullYear()}-CLA-${refSuffix}`, 50, 115);
         doc.text(currentDateStr, 350, 115, { width: 195, align: 'right' });
 
+        // Title: Letter of Appointment
+        doc.font('Times-Bold').fontSize(14).fillColor('#1e1b18');
+        doc.text('LETTER OF APPOINTMENT', 50, 135, { align: 'center', width: 495 });
+
         // Recipient
         doc.font('Times-Bold').fontSize(12).fillColor('#0f172a');
-        doc.text(`Dear ${candidate.name},`, 50, 145);
+        doc.text(`Dear ${candidate.name},`, 50, 165);
 
         // Body content
         doc.font('Times-Roman').fontSize(11).fillColor('#1e293b');
-        doc.text(bodyText, 50, 175, { width: 495, align: 'justify', lineGap: 5 });
+        doc.text(bodyText, 50, 195, { width: 495, align: 'justify', lineGap: 5 });
 
         let currentY = doc.y + 25;
 

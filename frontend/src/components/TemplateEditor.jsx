@@ -631,6 +631,10 @@ Sincerely,
                     <span>{currentDateStr}</span>
                   </div>
 
+                  <div style={{ textAlign: 'center', margin: '24px 0 16px 0' }}>
+                    <h3 style={{ fontFamily: 'Georgia, serif', letterSpacing: '3px', fontSize: '15px', textTransform: 'uppercase', color: '#1e1b18', borderBottom: '1px solid #c5a059', paddingBottom: '8px', display: 'inline-block' }}>Letter of Appointment</h3>
+                  </div>
+
                   <div className="letter-content" dangerouslySetInnerHTML={{ __html: htmlMode ? compileText(body) : escapeHtml(compileText(body)).replace(/\n/g, '<br/>') }} />
 
                   <div className="letter-stats-grid">
