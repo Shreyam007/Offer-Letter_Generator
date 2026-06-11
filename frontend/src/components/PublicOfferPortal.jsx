@@ -242,7 +242,7 @@ const PublicOfferPortal = ({ candidateId }) => {
                     </div>
                     <div style={{ width: '1px', height: '28px', backgroundColor: 'var(--border-color)' }}></div>
                     <div className="letter-logo-box">
-                      <div dangerouslySetInnerHTML={{ __html: AICTE_LOGO_SVG }} style={{ display: 'flex', alignItems: 'center' }} />
+                      {renderLogo(AICTE_LOGO_SVG, 'AICTE')}
                     </div>
                   </div>
                   <div className="letter-date-ref">
@@ -306,7 +306,7 @@ const PublicOfferPortal = ({ candidateId }) => {
                     </div>
                     <div style={{ width: '1px', height: '32px', backgroundColor: '#cbd5e1' }}></div>
                     <div className="letter-logo-box" style={{ height: '48px' }}>
-                      <div dangerouslySetInnerHTML={{ __html: AICTE_LOGO_SVG }} style={{ display: 'flex', alignItems: 'center' }} />
+                      {renderLogo(AICTE_LOGO_SVG, 'AICTE')}
                     </div>
                   </div>
                   <div className="company-title">{company?.name}</div>
@@ -361,7 +361,7 @@ const PublicOfferPortal = ({ candidateId }) => {
                     </div>
                     <div style={{ width: '1px', height: '24px', backgroundColor: '#cbd5e1' }}></div>
                     <div className="letter-logo-box" style={{ height: '36px' }}>
-                      <div dangerouslySetInnerHTML={{ __html: AICTE_LOGO_SVG }} style={{ display: 'flex', alignItems: 'center' }} />
+                      {renderLogo(AICTE_LOGO_SVG, 'AICTE')}
                     </div>
                   </div>
                   <span style={{ fontSize: '12px', fontWeight: 600 }}>{company?.name}</span>
