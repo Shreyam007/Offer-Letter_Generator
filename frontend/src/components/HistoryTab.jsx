@@ -214,29 +214,121 @@ const HistoryTab = () => {
     printEl.style.position = 'fixed';
     printEl.style.left = '-9999px';
     printEl.style.top = '-9999px';
-    printEl.innerHTML = `
-      <div id="print-letter-content" class="letter-sheet style-${style.toLowerCase()}" style="width: 8.5in; min-height: 11in; padding: 40px; background-color: #ffffff; font-family: 'Inter', sans-serif;">
+
+    let innerHtml = '';
+    if (style === 'Classic') {
+      innerHtml = `
+        <div class="classic-watermark" style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 180px; height: 180px; opacity: 0.04; pointer-events: none; z-index: 0;">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="50" cy="50" r="45" stroke-dasharray="3 3"></circle>
+            <circle cx="50" cy="50" r="38"></circle>
+            <path d="M50 22 L58 38 L76 41 L63 54 L66 72 L50 64 L34 72 L37 54 L24 41 L42 38 Z" fill="currentColor"></path>
+          </svg>
+        </div>
         ${headerHtml}
-        <div style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 24px; color: #475569; font-family: Georgia, serif;">
+          <span>Ref: HIST-${candidate._id.substring(0, 6).toUpperCase()}</span>
+          <span>October 24, 2026</span>
+        </div>
+        <div style="text-align: center; margin: 24px 0 16px 0;">
+          <h3 style="font-family: Georgia, serif; letter-spacing: 3px; font-size: 15px; text-transform: uppercase; color: #1e1b18; border-bottom: 1px solid #c5a059; padding-bottom: 8px; display: inline-block;">Letter of Appointment</h3>
+        </div>
+        <div style="margin-bottom: 24px; font-family: Georgia, serif; font-weight: bold; color: #1e1b18;">
+          Dear ${candidate.name},
+        </div>
+        <div style="margin-bottom: 24px; white-space: pre-wrap; font-size: 13px; line-height: 1.7; font-family: Georgia, serif; color: #1e1b18; text-align: justify;">
+          ${compileText(template?.body, candidate)}
+        </div>
+        <div class="letter-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; border-top: 3px double #d4af37; border-bottom: 3px double #d4af37; margin-bottom: 24px; padding: 8px 0; background-color: rgba(253, 252, 247, 0.4); font-family: Georgia, serif;">
+          <div style="text-align: center; padding: 8px; border-right: 1px solid rgba(212, 175, 55, 0.3);">
+            <div style="font-size: 10px; text-transform: uppercase; font-weight: bold; color: #854d0e; letter-spacing: 1px; margin-bottom: 4px;">Salary</div>
+            <div style="font-size: 16px; font-weight: bold; color: #1e1b18;">${candidate.salary}</div>
+          </div>
+          <div style="text-align: center; padding: 8px;">
+            <div style="font-size: 10px; text-transform: uppercase; font-weight: bold; color: #854d0e; letter-spacing: 1px; margin-bottom: 4px;">Start Date</div>
+            <div style="font-size: 16px; font-weight: bold; color: #1e1b18;">${candidate.joiningDate}</div>
+          </div>
+        </div>
+        <div class="classic-signature-area" style="margin-top: 32px; display: flex; justify-content: space-between; align-items: flex-end; font-family: Georgia, serif;">
+          <div style="line-height: 1.6; color: #1e1b18; font-size: 13px;">
+            Sincerely,<br/><br/>
+            <div style="font-family: 'Brush Script MT', 'Dancing Script', Georgia, cursive, serif; font-size: 24px; font-weight: bold; color: #1e3a8a; margin-bottom: 4px; letter-spacing: 1.5px;">Emily Watson</div>
+            <strong>Director of Talent Acquisition</strong><br/>
+            ${company.name || 'Company'}
+          </div>
+          <div style="width: 60px; height: 60px; background: radial-gradient(circle, #b91c1c 60%, #991b1b 100%); border-radius: 50%; border: 3px double #fca5a5; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: #fecaca; font-size: 8px; font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase; transform: rotate(-10deg); opacity: 0.95; margin-right: 12px;">
+            OFFICIAL SEAL
+          </div>
+        </div>
+      `;
+    } else if (style === 'Minimal') {
+      innerHtml = `
+        <div class="minimal-tag" style="font-family: monospace; font-size: 8px; color: #e11d48; letter-spacing: 2.5px; margin-bottom: 24px; font-weight: bold; text-transform: uppercase;">OFFER.MINIMAL.DOC</div>
+        ${headerHtml}
+        <div style="font-family: monospace; font-size: 10px; color: #71717a; margin-bottom: 24px; border-bottom: 1px solid #f4f4f5; padding-bottom: 10px; letter-spacing: 0.5px; text-transform: uppercase;">
+          October 24, 2026 / Ref: HIST-${candidate._id.substring(0, 6).toUpperCase()}
+        </div>
+        <div style="margin-bottom: 24px; font-family: Inter, sans-serif; font-size: 12.5px; color: #3f3f46; line-height: 1.8; white-space: pre-wrap;">
+          Dear ${candidate.name},<br/><br/>
+          ${compileText(template?.body, candidate)}
+        </div>
+        <div class="minimal-stats-container" style="margin-top: 24px; margin-bottom: 24px; border-top: 1px solid #e4e4e7; border-bottom: 1px solid #e4e4e7; padding: 16px 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 11px; color: #3f3f46; margin-bottom: 8px;">
+            <span style="font-weight: bold; color: #71717a; text-transform: uppercase;">COMPENSATION</span>
+            <span style="font-weight: bold; color: #18181b;">${candidate.salary}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 11px; color: #3f3f46;">
+            <span style="font-weight: bold; color: #71717a; text-transform: uppercase;">START DATE</span>
+            <span style="font-weight: bold; color: #18181b;">${candidate.joiningDate}</span>
+          </div>
+        </div>
+        <div style="margin-top: 24px; font-family: Inter, sans-serif; font-size: 12px; color: #3f3f46;">
+          Warm regards,<br/><br/>
+          <strong>${company.name || 'Company'} HR</strong>
+        </div>
+        <div class="minimal-footer" style="font-family: monospace; font-size: 8px; color: #a1a1aa; margin-top: auto; letter-spacing: 0.5px; border-top: 1px solid #f4f4f5; padding-top: 12px; text-transform: uppercase;">
+          CONFIDENTIALITY NOTICE: The information in this document is private.
+        </div>
+      `;
+    } else {
+      innerHtml = `
+        ${headerHtml}
+        <div class="modern-badge" style="align-self: flex-start; background-color: #4f46e5; color: #ffffff; font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2); display: inline-block;">Employment Offer</div>
+        <div style="margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; font-family: Inter, sans-serif;">
           <strong>Dear ${candidate.name},</strong>
           <div style="color: #64748b; font-size: 11px; margin-top: 2px;">${candidate.email}</div>
         </div>
-        <div style="margin-bottom: 32px; white-space: pre-wrap; font-size: 13px; line-height: 1.6;">
-          ${compileText(template?.body, candidate, company.name)}
+        <div style="margin-bottom: 24px; white-space: pre-wrap; font-size: 13px; line-height: 1.7; font-family: Inter, sans-serif; color: #334155;">
+          ${compileText(template?.body, candidate)}
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; background-color: #f8fafc; padding: 16px; border-radius: 6px; margin-bottom: 32px;">
+        <div class="letter-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); padding: 20px; border-radius: 12px; border: 1px solid #c7d2fe; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.05); font-family: Inter, sans-serif;">
           <div>
-            <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">Annual Salary</div>
-            <div style="font-size: 15px; font-weight: bold; color: #0b3c95;">${candidate.salary}</div>
+            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #4f46e5; letter-spacing: 1px; margin-bottom: 6px;">Annual Salary</div>
+            <div style="font-size: 18px; font-weight: 800; color: #1e1b4b;">${candidate.salary}</div>
           </div>
           <div>
-            <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">Start Date</div>
-            <div style="font-size: 15px; font-weight: bold; color: #0b3c95;">${candidate.joiningDate}</div>
+            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #4f46e5; letter-spacing: 1px; margin-bottom: 6px;">Start Date</div>
+            <div style="font-size: 18px; font-weight: 800; color: #1e1b4b;">${candidate.joiningDate}</div>
           </div>
         </div>
-        <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; font-size: 11px; color: #94a3b8; margin-top: auto;">
+        <div class="modern-signature" style="margin-top: 24px; display: flex; flex-direction: column; gap: 4px; font-family: Inter, sans-serif;">
+          <div class="sig-line" style="width: 150px; height: 1px; background-color: #cbd5e1; margin-bottom: 4px;"></div>
+          <div class="sig-text" style="font-size: 11px; color: #64748b;">HR Team, Talent Acquisition</div>
+          <div style="font-size: 10px; color: #94a3b8;">${company.name || 'Company'}</div>
+        </div>
+        <div class="modern-security-seal" style="margin-left: auto; margin-top: 10px; background-color: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; font-family: monospace; font-size: 9px; font-weight: bold; padding: 4px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+          <svg width="10" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span>SECURE & VERIFIED DOCUMENT</span>
+        </div>
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; font-size: 11px; color: #94a3b8; margin-top: auto; font-family: Inter, sans-serif;">
           This is a computer-generated offer letter from ${company.name || 'Company'} HR department.
         </div>
+      `;
+    }
+
+    printEl.innerHTML = `
+      <div id="print-letter-content" class="letter-sheet style-${style.toLowerCase()}" style="width: 8.5in; min-height: 11in; padding: 40px; background-color: #ffffff; font-family: 'Inter', sans-serif; position: relative;">
+        ${innerHtml}
       </div>
     `;
 

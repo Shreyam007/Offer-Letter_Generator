@@ -349,6 +349,8 @@ const PreviewSend = () => {
                         </div>
                       </div>
                       
+                      <div className="modern-badge">Employment Offer</div>
+
                       <div className="letter-recipient">
                         <strong>Dear {activeCandidate.name},</strong>
                         <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '2px' }}>{activeCandidate.email}</div>
@@ -367,6 +369,17 @@ const PreviewSend = () => {
                         </div>
                       </div>
 
+                      <div className="modern-signature">
+                        <div className="sig-line"></div>
+                        <div className="sig-text">HR Team, Talent Acquisition</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-light)' }}>{selectedCompany?.name || 'Global Corp'}</div>
+                      </div>
+
+                      <div className="modern-security-seal">
+                        <svg width="10" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <span>SECURE & VERIFIED DOCUMENT</span>
+                      </div>
+
                       <div className="letter-footer">
                         This is an official document from {selectedCompany?.name || 'Global Corp'} HR department.
                       </div>
@@ -376,6 +389,14 @@ const PreviewSend = () => {
                   {/* Classic Style Layout */}
                   {style === 'Classic' && (
                     <>
+                      <div className="classic-watermark">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <circle cx="50" cy="50" r="45" strokeDasharray="3 3"></circle>
+                          <circle cx="50" cy="50" r="38"></circle>
+                          <path d="M50 22 L58 38 L76 41 L63 54 L66 72 L50 64 L34 72 L37 54 L24 41 L42 38 Z" fill="currentColor"></path>
+                        </svg>
+                      </div>
+
                       <div className="letter-header">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', marginBottom: '16px' }}>
                           <div className="letter-logo-box" style={{ height: '48px' }}>
@@ -387,7 +408,7 @@ const PreviewSend = () => {
                           </div>
                         </div>
                         <div className="company-title">{selectedCompany?.name}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{selectedCompany?.tagline}</div>
+                        {selectedCompany?.tagline && <div className="company-tagline">{selectedCompany.tagline}</div>}
                       </div>
                       
                       <div className="letter-date-ref">
@@ -412,10 +433,16 @@ const PreviewSend = () => {
                         </div>
                       </div>
 
-                      <div className="letter-sign">
-                        Sincerely,<br/><br/><br/>
-                        <strong>HR Department</strong><br/>
-                        {selectedCompany?.name}
+                      <div className="classic-signature-area">
+                        <div className="letter-sign">
+                          Sincerely,<br/><br/>
+                          <div className="classic-signature">Emily Watson</div>
+                          <strong>Director of Talent Acquisition</strong><br/>
+                          {selectedCompany?.name || 'Global Corp'}
+                        </div>
+                        <div className="classic-wax-seal">
+                          OFFICIAL SEAL
+                        </div>
                       </div>
                     </>
                   )}
@@ -423,6 +450,8 @@ const PreviewSend = () => {
                   {/* Minimal Style Layout */}
                   {style === 'Minimal' && (
                     <>
+                      <div className="minimal-tag">OFFER.MINIMAL.DOC</div>
+
                       <div className="letter-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div className="letter-logo-box" style={{ height: '36px' }}>
@@ -442,18 +471,23 @@ const PreviewSend = () => {
 
                       <div className="letter-content" style={{ fontSize: '12px' }} dangerouslySetInnerHTML={renderLetterBody(template?.body, activeCandidate)} />
 
-                      <div className="letter-stats-grid">
-                        <div className="letter-stat-item">
-                          <div className="letter-stat-label">COMPENSATION</div>
-                          <div className="letter-stat-value">{activeCandidate.salary}</div>
+                      <div className="minimal-stats-container">
+                        <div className="minimal-stat-row">
+                          <span className="minimal-stat-label">COMPENSATION</span>
+                          <span className="minimal-stat-value">{activeCandidate.salary}</span>
                         </div>
-                        <div className="letter-stat-item">
-                          <div className="letter-stat-label">START DATE</div>
-                          <div className="letter-stat-value">{activeCandidate.joiningDate}</div>
+                        <div className="minimal-stat-row">
+                          <span className="minimal-stat-label">START DATE</span>
+                          <span className="minimal-stat-value">{activeCandidate.joiningDate}</span>
                         </div>
                       </div>
 
-                      <div style={{ fontSize: '11px', color: 'var(--text-light)', marginTop: 'auto' }}>
+                      <div style={{ marginTop: '24px', fontSize: '12px' }}>
+                        Warm regards,<br/><br/>
+                        <strong>{selectedCompany?.name || 'Global Corp'} HR</strong>
+                      </div>
+
+                      <div className="minimal-footer">
                         CONFIDENTIALITY NOTICE: The information in this document is private.
                       </div>
                     </>

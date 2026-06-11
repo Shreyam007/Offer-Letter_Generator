@@ -69,24 +69,31 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
       if (style === 'Classic') {
         doc.font('Times-Roman');
 
-        // Draw double gold frame border
+        // Draw outer gold rectangle & inner gold rectangle frame
         doc.save();
         doc.rect(20, 20, 555.28, 801.89).strokeColor('#d4af37').lineWidth(2).stroke();
         doc.rect(26, 26, 543.28, 789.89).strokeColor('#d4af37').lineWidth(0.5).stroke();
+        
+        // Draw a light gold watermark crest in the background center
+        doc.strokeColor('#d4af37').lineWidth(0.5).opacity(0.04);
+        doc.circle(297.64, 420.94, 90).stroke();
+        doc.circle(297.64, 420.94, 76).stroke();
+        doc.moveTo(297.64, 345).lineTo(297.64, 495).stroke();
+        doc.moveTo(222.64, 420.94).lineTo(372.64, 420.94).stroke();
         doc.restore();
 
         // Header
-        doc.font('Times-Bold').fontSize(24).fillColor('#1e293b');
+        doc.font('Times-Bold').fontSize(26).fillColor('#1e1b18');
         doc.text(company.name.toUpperCase(), 50, 45, { align: 'center', width: 495 });
 
         if (company.tagline) {
-          doc.font('Times-Italic').fontSize(11).fillColor('#64748b');
+          doc.font('Times-Italic').fontSize(11).fillColor('#854d0e');
           doc.text(company.tagline, 50, 75, { align: 'center', width: 495 });
         }
 
-        // Double lines
-        doc.moveTo(50, 95).lineTo(545, 95).strokeColor('#94a3b8').lineWidth(1.5).stroke();
-        doc.moveTo(50, 99).lineTo(545, 99).strokeColor('#94a3b8').lineWidth(0.5).stroke();
+        // Double lines below header
+        doc.moveTo(50, 95).lineTo(545, 95).strokeColor('#d4af37').lineWidth(1.5).stroke();
+        doc.moveTo(50, 99).lineTo(545, 99).strokeColor('#d4af37').lineWidth(0.5).stroke();
 
         // Ref / Date table
         doc.font('Times-Roman').fontSize(10).fillColor('#475569');
@@ -114,22 +121,25 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
         }
 
         doc.save();
-        doc.rect(50, currentY, 495, 55).fill('#f8fafc');
-        doc.rect(50, currentY, 495, 55).strokeColor('#cbd5e1').lineWidth(1).stroke();
-        doc.moveTo(297.64, currentY).lineTo(297.64, currentY + 55).strokeColor('#cbd5e1').stroke();
+        doc.rect(50, currentY, 495, 52).fill('#fdfcf7');
+        doc.moveTo(50, currentY).lineTo(545, currentY).strokeColor('#d4af37').lineWidth(1.5).stroke();
+        doc.moveTo(50, currentY + 3).lineTo(545, currentY + 3).strokeColor('#d4af37').lineWidth(0.5).stroke();
+        doc.moveTo(50, currentY + 49).lineTo(545, currentY + 49).strokeColor('#d4af37').lineWidth(0.5).stroke();
+        doc.moveTo(50, currentY + 52).lineTo(545, currentY + 52).strokeColor('#d4af37').lineWidth(1.5).stroke();
+        doc.moveTo(297.64, currentY).lineTo(297.64, currentY + 52).strokeColor('#d4af37').lineWidth(0.5).stroke();
         doc.restore();
 
-        doc.font('Times-Bold').fontSize(9).fillColor('#475569');
+        doc.font('Times-Bold').fontSize(9).fillColor('#854d0e');
         doc.text('SALARY', 50, currentY + 12, { width: 247.64, align: 'center' });
-        doc.font('Times-Bold').fontSize(14).fillColor('#0f172a');
-        doc.text(candidate.salary || '-', 50, currentY + 28, { width: 247.64, align: 'center' });
+        doc.font('Times-Bold').fontSize(14).fillColor('#1e1b18');
+        doc.text(candidate.salary || '-', 50, currentY + 27, { width: 247.64, align: 'center' });
 
-        doc.font('Times-Bold').fontSize(9).fillColor('#475569');
+        doc.font('Times-Bold').fontSize(9).fillColor('#854d0e');
         doc.text('START DATE', 297.64, currentY + 12, { width: 247.64, align: 'center' });
-        doc.font('Times-Bold').fontSize(14).fillColor('#0f172a');
-        doc.text(candidate.joiningDate || '-', 297.64, currentY + 28, { width: 247.64, align: 'center' });
+        doc.font('Times-Bold').fontSize(14).fillColor('#1e1b18');
+        doc.text(candidate.joiningDate || '-', 297.64, currentY + 27, { width: 247.64, align: 'center' });
 
-        currentY += 80;
+        currentY += 75;
 
         // Sign-off
         if (currentY + 80 > 791) {
@@ -137,41 +147,60 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
           currentY = 50;
         }
 
-        doc.font('Times-Roman').fontSize(11).fillColor('#1e293b');
+        doc.font('Times-Roman').fontSize(11).fillColor('#1e1b18');
         doc.text('Sincerely,', 50, currentY);
-        doc.font('Times-Bold').fontSize(11).fillColor('#1e293b');
-        doc.text('HR Department', 50, currentY + 30);
-        doc.text(company.name, 50, currentY + 45);
+        
+        doc.font('Times-BoldItalic').fontSize(22).fillColor('#1e3a8a');
+        doc.text('Emily Watson', 50, currentY + 20);
+
+        doc.font('Times-Bold').fontSize(11).fillColor('#1e1b18');
+        doc.text('Director of Talent Acquisition', 50, currentY + 45);
+        doc.font('Times-Roman').fontSize(11).fillColor('#475569');
+        doc.text(company.name, 50, currentY + 60);
+
+        // Wax seal
+        doc.save();
+        doc.circle(480, currentY + 40, 28).fill('#b91c1c');
+        doc.circle(480, currentY + 40, 24).strokeColor('#fca5a5').lineWidth(1).stroke();
+        doc.font('Helvetica-Bold').fontSize(7).fillColor('#fecaca');
+        doc.text('OFFICIAL', 452, currentY + 33, { width: 56, align: 'center' });
+        doc.text('SEAL', 452, currentY + 42, { width: 56, align: 'center' });
+        doc.restore();
 
       } else if (style === 'Minimal') {
         doc.font('Helvetica');
 
-        // Draw top brand bar (orange)
+        // Draw top brand bar (crimson)
         doc.save();
-        doc.rect(0, 0, 595.28, 6).fill('#f97316');
+        doc.rect(0, 0, 595.28, 8).fill('#e11d48');
         doc.restore();
+
+        // Minimal tag
+        doc.font('Courier-Bold').fontSize(8).fillColor('#e11d48');
+        doc.text('OFFER.MINIMAL.DOC', 50, 28);
 
         // Header logo & name
         if (logoBuffer) {
           try {
-            doc.image(logoBuffer, 50, 40, { height: 30 });
+            doc.image(logoBuffer, 50, 45, { height: 30 });
           } catch (err) {
             console.error('Failed to embed logo in Minimal PDF:', err);
           }
         }
-        doc.font('Helvetica-Bold').fontSize(12).fillColor('#0f172a');
-        doc.text(company.name.toUpperCase(), 350, 45, { width: 195, align: 'right' });
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#18181b');
+        doc.text(company.name.toUpperCase(), 350, 50, { width: 195, align: 'right' });
 
-        // Date and Ref
-        doc.font('Helvetica').fontSize(10).fillColor('#94a3b8');
-        doc.text(`${currentDateStr} / Ref: OF-${new Date().getFullYear()}-MIN-${refSuffix}`, 50, 85);
+        // Date and Ref in Courier
+        doc.font('Courier').fontSize(10).fillColor('#71717a');
+        doc.text(`${currentDateStr} / Ref: OF-${new Date().getFullYear()}-MIN-${refSuffix}`, 50, 90);
 
         // Line divider
-        doc.moveTo(50, 105).lineTo(545, 105).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+        doc.moveTo(50, 110).lineTo(545, 110).strokeColor('#f4f4f5').lineWidth(1).stroke();
 
         // Content
-        doc.font('Helvetica').fontSize(10.5).fillColor('#334155');
-        doc.text(bodyText, 50, 125, { width: 495, align: 'justify', lineGap: 4 });
+        doc.font('Helvetica').fontSize(10.5).fillColor('#3f3f46');
+        doc.text(`Dear ${candidate.name},`, 50, 130);
+        doc.text(bodyText, 50, 155, { width: 495, align: 'justify', lineGap: 5 });
 
         let currentY = doc.y + 20;
 
@@ -182,23 +211,23 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
         }
 
         doc.save();
-        doc.moveTo(50, currentY).lineTo(545, currentY).strokeColor('#e2e8f0').lineWidth(1).stroke();
+        doc.moveTo(50, currentY).lineTo(545, currentY).strokeColor('#e4e4e7').lineWidth(1).stroke();
         doc.restore();
 
-        doc.font('Helvetica').fontSize(9).fillColor('#94a3b8');
+        doc.font('Courier-Bold').fontSize(9).fillColor('#71717a');
         doc.text('COMPENSATION', 50, currentY + 10);
-        doc.font('Helvetica-Bold').fontSize(12).fillColor('#0f172a');
-        doc.text(candidate.salary || '-', 50, currentY + 23);
+        doc.font('Courier-Bold').fontSize(12).fillColor('#18181b');
+        doc.text(candidate.salary || '-', 350, currentY + 10, { width: 195, align: 'right' });
 
-        doc.font('Helvetica').fontSize(9).fillColor('#94a3b8');
-        doc.text('START DATE', 300, currentY + 10);
-        doc.font('Helvetica-Bold').fontSize(12).fillColor('#0f172a');
-        doc.text(candidate.joiningDate || '-', 300, currentY + 23);
+        doc.font('Courier-Bold').fontSize(9).fillColor('#71717a');
+        doc.text('START DATE', 50, currentY + 28);
+        doc.font('Courier-Bold').fontSize(12).fillColor('#18181b');
+        doc.text(candidate.joiningDate || '-', 350, currentY + 28, { width: 195, align: 'right' });
 
         currentY += 55;
 
         doc.save();
-        doc.moveTo(50, currentY).lineTo(545, currentY).strokeColor('#e2e8f0').lineWidth(1).stroke();
+        doc.moveTo(50, currentY).lineTo(545, currentY).strokeColor('#e4e4e7').lineWidth(1).stroke();
         doc.restore();
 
         currentY += 20;
@@ -209,21 +238,28 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
           currentY = 50;
         }
 
-        doc.font('Helvetica').fontSize(10.5).fillColor('#334155');
-        doc.text('Best regards,', 50, currentY);
-        doc.font('Helvetica-Bold').fontSize(10.5).fillColor('#0f172a');
-        doc.text(company.name, 50, currentY + 15);
+        doc.font('Helvetica').fontSize(10.5).fillColor('#3f3f46');
+        doc.text('Warm regards,', 50, currentY);
+        doc.font('Helvetica-Bold').fontSize(10.5).fillColor('#18181b');
+        doc.text(`${company.name} HR`, 50, currentY + 15);
 
-        // Confidentiality footer
-        doc.font('Helvetica-Oblique').fontSize(9).fillColor('#94a3b8');
-        doc.text('CONFIDENTIALITY NOTICE: The information in this document is private.', 50, 780, { width: 495, align: 'center' });
+        // Confidentiality footer in Courier
+        doc.font('Courier').fontSize(8).fillColor('#a1a1aa');
+        doc.text('CONFIDENTIALITY NOTICE: THE INFORMATION IN THIS DOCUMENT IS PRIVATE.', 50, 780, { width: 495, align: 'center' });
 
       } else {
         // Modern Style
         doc.font('Helvetica');
 
-        // Left brand accent bar
-        doc.rect(0, 0, 10, 841.89).fill('#0b3c95');
+        // Left brand accent bar (indigo)
+        doc.rect(0, 0, 12, 841.89).fill('#4f46e5');
+
+        // Top Corner badge
+        doc.save();
+        doc.rect(395, 25, 150, 20).fill('#4f46e5');
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#ffffff');
+        doc.text('EMPLOYMENT OFFER', 395, 31, { width: 150, align: 'center' });
+        doc.restore();
 
         // Header logo/name
         if (logoBuffer) {
@@ -231,29 +267,29 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
             doc.image(logoBuffer, 50, 40, { height: 40 });
           } catch (err) {
             console.error('Failed to embed logo in Modern PDF:', err);
-            doc.font('Helvetica-Bold').fontSize(22).fillColor('#0b3c95').text(company.name, 50, 40);
+            doc.font('Helvetica-Bold').fontSize(22).fillColor('#4f46e5').text(company.name, 50, 40);
           }
         } else {
-          doc.font('Helvetica-Bold').fontSize(22).fillColor('#0b3c95').text(company.name, 50, 40);
+          doc.font('Helvetica-Bold').fontSize(22).fillColor('#4f46e5').text(company.name, 50, 40);
         }
 
         // Date and Ref
         doc.font('Helvetica').fontSize(10).fillColor('#64748b');
-        doc.text(currentDateStr, 350, 40, { width: 195, align: 'right' });
-        doc.text(`Ref: OF-${new Date().getFullYear()}-MOD-${refSuffix}`, 350, 55, { width: 195, align: 'right' });
+        doc.text(currentDateStr, 50, 90);
+        doc.text(`Ref: OF-${new Date().getFullYear()}-MOD-${refSuffix}`, 350, 90, { width: 195, align: 'right' });
 
         // Divider
-        doc.moveTo(50, 95).lineTo(545, 95).strokeColor('#e2e8f0').lineWidth(1).stroke();
+        doc.moveTo(50, 105).lineTo(545, 105).strokeColor('#e2e8f0').lineWidth(1).stroke();
 
         // Recipient
-        doc.font('Helvetica-Bold').fontSize(12).fillColor('#0f172a');
-        doc.text(`Dear ${candidate.name},`, 50, 115);
+        doc.font('Helvetica-Bold').fontSize(11).fillColor('#1f2937');
+        doc.text(`Dear ${candidate.name},`, 50, 120);
         doc.font('Helvetica').fontSize(10).fillColor('#64748b');
-        doc.text(candidate.email || '', 50, 130);
+        doc.text(candidate.email || '', 50, 135);
 
         // Body Content
-        doc.font('Helvetica').fontSize(11).fillColor('#1e293b');
-        doc.text(bodyText, 50, 160, { width: 495, align: 'justify', lineGap: 4 });
+        doc.font('Helvetica').fontSize(11).fillColor('#334155');
+        doc.text(bodyText, 50, 165, { width: 495, align: 'justify', lineGap: 5.5 });
 
         let currentY = doc.y + 25;
 
@@ -264,21 +300,21 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
         }
 
         doc.save();
-        doc.rect(50, currentY, 495, 60).fill('#f0f7ff');
-        doc.rect(50, currentY, 495, 60).strokeColor('#bae6fd').lineWidth(1).stroke();
+        doc.rect(50, currentY, 495, 55).fill('#eef2ff');
+        doc.rect(50, currentY, 495, 55).strokeColor('#c7d2fe').lineWidth(1).stroke();
         doc.restore();
 
-        doc.font('Helvetica-Bold').fontSize(9).fillColor('#64748b');
-        doc.text('ANNUAL SALARY', 70, currentY + 15);
-        doc.font('Helvetica-Bold').fontSize(14).fillColor('#0b3c95');
-        doc.text(candidate.salary || '-', 70, currentY + 30);
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#4f46e5');
+        doc.text('ANNUAL SALARY', 70, currentY + 13);
+        doc.font('Helvetica-Bold').fontSize(15).fillColor('#1e1b4b');
+        doc.text(candidate.salary || '-', 70, currentY + 27);
 
-        doc.font('Helvetica-Bold').fontSize(9).fillColor('#64748b');
-        doc.text('START DATE', 300, currentY + 15);
-        doc.font('Helvetica-Bold').fontSize(14).fillColor('#0b3c95');
-        doc.text(candidate.joiningDate || '-', 300, currentY + 30);
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#4f46e5');
+        doc.text('START DATE', 300, currentY + 13);
+        doc.font('Helvetica-Bold').fontSize(15).fillColor('#1e1b4b');
+        doc.text(candidate.joiningDate || '-', 300, currentY + 27);
 
-        currentY += 85;
+        currentY += 80;
 
         // Sign-off
         if (currentY + 60 > 791) {
@@ -286,15 +322,24 @@ const generateOfferLetterPdf = (candidate, company, template, bodyText, style) =
           currentY = 50;
         }
 
-        doc.font('Helvetica').fontSize(11).fillColor('#1e293b');
-        doc.text('Best regards,', 50, currentY);
-        doc.font('Helvetica-Bold').fontSize(11).fillColor('#1e293b');
-        doc.text('HR Team', 50, currentY + 20);
+        doc.save();
+        doc.moveTo(50, currentY).lineTo(200, currentY).strokeColor('#cbd5e1').lineWidth(1).stroke();
+        doc.restore();
+
         doc.font('Helvetica').fontSize(11).fillColor('#64748b');
-        doc.text(company.name, 50, currentY + 35);
+        doc.text('HR Team, Talent Acquisition', 50, currentY + 8);
+        doc.font('Helvetica').fontSize(11).fillColor('#94a3b8');
+        doc.text(company.name, 50, currentY + 23);
+
+        // Security badge
+        doc.save();
+        doc.rect(380, currentY + 8, 165, 20).fill('#ecfdf5');
+        doc.rect(380, currentY + 8, 165, 20).strokeColor('#a7f3d0').lineWidth(0.5).stroke();
+        doc.font('Courier-Bold').fontSize(8).fillColor('#065f46');
+        doc.text('✓ SECURE & VERIFIED DOCUMENT', 380, currentY + 14, { width: 165, align: 'center' });
+        doc.restore();
 
         // Footer at bottom
-        doc.moveTo(50, 770).lineTo(545, 770).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
         doc.font('Helvetica').fontSize(9).fillColor('#94a3b8');
         doc.text(`This is an official document from ${company.name} HR department.`, 50, 780, { width: 495, align: 'center' });
       }
