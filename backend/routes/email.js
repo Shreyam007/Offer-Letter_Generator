@@ -810,11 +810,36 @@ router.post('/send-campaign', async (req, res) => {
           `;
         }
 
+        // Determine frontend URL for candidate interactive portal
+        let frontendUrl = process.env.FRONTEND_URL;
+        if (!frontendUrl) {
+          const origin = req.get('origin') || req.get('referer');
+          if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+            try {
+              frontendUrl = new URL(origin).origin;
+            } catch (e) {
+              frontendUrl = 'http://localhost:5173';
+            }
+          } else {
+            frontendUrl = 'https://frontend-nine-eta-67.vercel.app';
+          }
+        }
+        const portalUrl = `${frontendUrl.replace(/\/$/, '')}/?viewOffer=${candidate._id}`;
+
         // Use a publicly accessible tracking URL so that remote mail clients (like Gmail) can load the tracking pixel.
-        // Falls back to the request origin dynamically, or the public Render backend URL as a fallback.
-        const trackingUrl = process.env.TRACKING_URL || `${req.protocol}://${req.get('host')}`;
+        // Falls back to local dynamically for developers, or the public Render backend URL.
+        let trackingUrl = process.env.TRACKING_URL;
+        if (!trackingUrl) {
+          const host = req.get('host');
+          if (host && (host.includes('localhost') || host.includes('127.0.0.1'))) {
+            trackingUrl = `${req.protocol}://${host}`;
+          } else {
+            trackingUrl = 'https://offer-letter-generator-whu4.onrender.com';
+          }
+        }
         const trackingPixelUrl = `${trackingUrl.replace(/\/$/, '')}/api/email/track/${candidate._id}.gif`;
         const pixelHtml = `<img src="${trackingPixelUrl}" width="1" height="1" border="0" style="margin:0; padding:0; border:none; display:block;" alt="" />`;
+        
         if (htmlEmail.includes('<body>')) {
           htmlEmail = htmlEmail.replace('<body>', `<body>\n${pixelHtml}`);
         } else if (htmlEmail.includes('<body')) {
@@ -827,6 +852,26 @@ router.post('/send-campaign', async (req, res) => {
           }
         } else {
           htmlEmail = pixelHtml + htmlEmail;
+        }
+
+        // Add a beautiful, polished CTA button inside the email body so the candidate can open the letter online
+        const ctaHtml = `
+          <div style="text-align: center; margin: 35px 0 20px 0; font-family: 'Inter', -apple-system, sans-serif;">
+            <a href="${portalUrl}" target="_blank" style="background-color: #4f46e5; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1); transition: all 0.2s ease;">
+              View & Action Official Offer Letter
+            </a>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 8px;">
+              Verify security signature and accept contract digitally.
+            </div>
+          </div>
+        `;
+
+        if (htmlEmail.includes('<div class="footer">')) {
+          htmlEmail = htmlEmail.replace('<div class="footer">', `${ctaHtml}\n<div class="footer">`);
+        } else if (htmlEmail.includes('</body>')) {
+          htmlEmail = htmlEmail.replace('</body>', `${ctaHtml}\n</body>`);
+        } else {
+          htmlEmail = htmlEmail + ctaHtml;
         }
 
         try {
@@ -961,6 +1006,157 @@ router.get('/track/:candidateId', async (req, res) => {
     'Access-Control-Allow-Origin': '*'
   });
   res.end(trackingPixel);
+});
+
+// Public endpoints for candidate online offer viewer portal
+
+// GET candidate offer details
+router.get('/public/candidate-offer/:candidateId', async (req, res) => {
+  const { candidateId } = req.params;
+  try {
+    const isOffline = mongoose.connection.readyState !== 1;
+    if (isOffline) {
+      const candidate = inMemoryCandidates.find(c => c._id === candidateId);
+      if (!candidate) return res.status(404).json({ message: 'Offer letter not found.' });
+      
+      const company = inMemoryCompanies.find(c => c._id === candidate.companyId) || defaultCompany;
+      const template = inMemoryTemplates.find(t => t._id === candidate.templateId) || defaultTemplates[0];
+      return res.json({ candidate, company, template });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(candidateId)) {
+      return res.status(400).json({ message: 'Invalid Offer ID' });
+    }
+
+    const candidate = await Candidate.findById(candidateId);
+    if (!candidate) return res.status(404).json({ message: 'Offer letter not found.' });
+
+    const campaign = await Campaign.findById(candidate.campaignId).populate('companyId').populate('templateId');
+    if (!campaign) return res.status(404).json({ message: 'Offer campaign not found.' });
+
+    res.json({
+      candidate,
+      company: campaign.companyId,
+      template: campaign.templateId
+    });
+  } catch (error) {
+    console.error('Error fetching public candidate offer:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET candidate offer PDF attachment download
+router.get('/public/candidate-offer/:candidateId/pdf', async (req, res) => {
+  const { candidateId } = req.params;
+  try {
+    const isOffline = mongoose.connection.readyState !== 1;
+    if (isOffline) {
+      return res.status(400).json({ message: 'PDF generation is not available in offline mode.' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(candidateId)) {
+      return res.status(400).json({ message: 'Invalid Offer ID' });
+    }
+
+    const candidate = await Candidate.findById(candidateId);
+    if (!candidate) return res.status(404).json({ message: 'Offer letter not found.' });
+
+    const campaign = await Campaign.findById(candidate.campaignId).populate('companyId').populate('templateId');
+    if (!campaign) return res.status(404).json({ message: 'Offer campaign not found.' });
+
+    // Format the email body variables
+    const vars = {
+      Name: candidate.name,
+      Role: candidate.role,
+      Department: candidate.department,
+      Salary: candidate.salary,
+      StartDate: candidate.joiningDate,
+      JoiningDate: candidate.joiningDate,
+      Company: campaign.companyId.name,
+      Manager: 'HR Team'
+    };
+
+    if (candidate.customFields) {
+      if (typeof candidate.customFields.forEach === 'function') {
+        candidate.customFields.forEach((val, key) => {
+          vars[key] = val;
+        });
+      } else {
+        Object.keys(candidate.customFields).forEach(key => {
+          vars[key] = candidate.customFields[key];
+        });
+      }
+    }
+
+    let mailBody = campaign.templateId.body;
+    Object.keys(vars).forEach(key => {
+      const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'gi');
+      mailBody = mailBody.replace(regex, vars[key] !== undefined ? vars[key] : '');
+    });
+    mailBody = mailBody.replace(/{{\s*(.*?)\s*}}/g, '$1');
+
+    const pdfBuffer = await generateOfferLetterPdf(
+      candidate,
+      campaign.companyId,
+      campaign.templateId,
+      mailBody,
+      campaign.templateId.style
+    );
+
+    res.writeHead(200, {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${candidate.name.replace(/\s+/g, '_')}_Offer_Letter.pdf"`,
+      'Content-Length': pdfBuffer.length
+    });
+    res.end(pdfBuffer);
+  } catch (error) {
+    console.error('Error generating public candidate PDF:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST accept candidate offer
+router.post('/public/candidate-offer/:candidateId/accept', async (req, res) => {
+  const { candidateId } = req.params;
+  try {
+    const isOffline = mongoose.connection.readyState !== 1;
+    if (isOffline) {
+      const candidate = inMemoryCandidates.find(c => c._id === candidateId);
+      if (candidate) {
+        candidate.status = 'Accepted';
+        console.log(`[Offline] Candidate ${candidate.name} accepted offer`);
+        broadcastCandidateUpdate(candidateId, 'Accepted');
+        return res.json({ success: true, candidate });
+      }
+      return res.status(404).json({ message: 'Candidate not found.' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(candidateId)) {
+      return res.status(400).json({ message: 'Invalid Offer ID' });
+    }
+
+    const candidate = await Candidate.findById(candidateId);
+    if (!candidate) return res.status(404).json({ message: 'Offer letter not found.' });
+
+    candidate.status = 'Accepted';
+    await candidate.save();
+
+    // Log the accept action to History
+    await History.create({
+      campaignId: candidate.campaignId,
+      candidateName: candidate.name,
+      candidateEmail: candidate.email,
+      status: 'Accepted'
+    });
+
+    console.log(`[DB] Candidate ${candidate.name} accepted offer`);
+    broadcastCandidateUpdate(candidate._id.toString(), 'Accepted');
+
+    res.json({ success: true, candidate });
+  } catch (error) {
+    console.error('Error accepting candidate offer:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 export default router;

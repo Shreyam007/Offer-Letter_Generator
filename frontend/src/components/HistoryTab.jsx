@@ -512,7 +512,12 @@ const HistoryTab = () => {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          {cand.status === 'Opened' ? (
+                          {cand.status === 'Accepted' ? (
+                            <span className="text-emerald-700 flex items-center gap-1 text-xs font-bold bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                              <CheckCircle2 size={12} />
+                              <span>Accepted</span>
+                            </span>
+                          ) : cand.status === 'Opened' ? (
                             <span className="text-blue-600 flex items-center gap-1 text-xs font-bold bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full" title={cand.openedAt ? `Opened at: ${new Date(cand.openedAt).toLocaleString()}` : ''}>
                               <Eye size={12} />
                               <span>Opened</span>

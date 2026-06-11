@@ -8,6 +8,7 @@ import TemplateEditor from './components/TemplateEditor';
 import PreviewSend from './components/PreviewSend';
 import HistoryTab from './components/HistoryTab';
 import SettingsTab from './components/SettingsTab';
+import PublicOfferPortal from './components/PublicOfferPortal';
 
 // Main dashboard container that consumes AppContext
 const MainAppContent = () => {
@@ -57,9 +58,16 @@ const MainAppContent = () => {
 };
 
 function App() {
+  const queryParams = new URLSearchParams(window.location.search);
+  const viewOfferId = queryParams.get('viewOffer');
+
   return (
     <AppProvider>
-      <MainAppContent />
+      {viewOfferId ? (
+        <PublicOfferPortal candidateId={viewOfferId} />
+      ) : (
+        <MainAppContent />
+      )}
     </AppProvider>
   );
 }

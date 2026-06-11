@@ -12,7 +12,7 @@ const candidateSchema = mongoose.Schema(
     openedAt: { type: Date, default: null },
     status: {
       type: String,
-      enum: ['Pending', 'Validated', 'Invalid Email', 'Sending', 'Sent', 'Failed', 'Retrying', 'Opened'],
+      enum: ['Pending', 'Validated', 'Invalid Email', 'Sending', 'Sent', 'Failed', 'Retrying', 'Opened', 'Accepted'],
       default: 'Pending'
     },
     error: { type: String, default: '' },

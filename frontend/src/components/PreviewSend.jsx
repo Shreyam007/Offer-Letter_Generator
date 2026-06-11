@@ -609,6 +609,12 @@ const PreviewSend = () => {
                     </div>
 
                     <div>
+                      {c.status === 'Accepted' && (
+                        <span className="text-emerald-700 flex items-center gap-1 font-bold">
+                          <CheckCircle2 size={12} />
+                          <span>Accepted</span>
+                        </span>
+                      )}
                       {c.status === 'Opened' && (
                         <div className="flex flex-col items-end">
                           <span className="text-blue-600 flex items-center gap-1 font-bold">
