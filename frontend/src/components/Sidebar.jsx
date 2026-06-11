@@ -45,9 +45,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         {/* Brand Logo */}
         <div className="logo-container">
           <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white font-extrabold text-lg">
-            O
+            T
           </div>
-          <span className="logo-text">OfferFlow HR</span>
+          <span className="logo-text">TalentDraft</span>
         </div>
 
         {/* Company Profile Selection Widget */}

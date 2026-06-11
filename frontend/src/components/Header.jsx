@@ -21,7 +21,7 @@ const Header = ({ activeTab, setActiveTab }) => {
           style={{ cursor: 'pointer' }}
           onClick={() => handleTabClick('workflow')}
         >
-          OfferFlow HR
+          TalentDraft
         </h1>
         
         <div className="header-tabs">

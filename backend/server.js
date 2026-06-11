@@ -35,7 +35,7 @@ app.use('/api/email', emailRoutes);
 
 // Health check
 app.get('/', (req, res) => {
-  res.send('OfferFlow HR API is running...');
+  res.send('TalentDraft API is running...');
 });
 
 // New ready endpoint for frontend to know when DB is connected

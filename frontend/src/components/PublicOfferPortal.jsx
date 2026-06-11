@@ -48,9 +48,29 @@ const PublicOfferPortal = ({ candidateId }) => {
     }
   }, [candidateId]);
 
+  // Dynamic favicon update based on company logo
+  useEffect(() => {
+    if (offerData?.company?.logo) {
+      try {
+        let faviconUrl = offerData.company.logo;
+        if (faviconUrl.trim().startsWith('<svg')) {
+          faviconUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(faviconUrl.trim());
+        }
+        const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+        link.type = faviconUrl.startsWith('data:image/svg+xml') ? 'image/svg+xml' : 'image/png';
+        link.rel = 'shortcut icon';
+        link.href = faviconUrl;
+        document.getElementsByTagName('head')[0].appendChild(link);
+      } catch (err) {
+        console.error('Failed to update favicon:', err);
+      }
+    }
+  }, [offerData]);
+
   const handleAcceptOffer = async () => {
     if (accepting || accepted) return;
     setAccepting(true);
+
     try {
       const res = await fetch(`${API_BASE}/email/public/candidate-offer/${candidateId}/accept`, {
         method: 'POST',
@@ -402,7 +422,7 @@ const PublicOfferPortal = ({ candidateId }) => {
 
       {/* Footer bar */}
       <footer style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e2e8f0', padding: '16px', textAlign: 'center', fontSize: '12px', color: '#64748b' }}>
-        Secure connection provided by {company?.name || 'Company'} Portal. Powered by OfferFlow.
+        Secure connection provided by {company?.name || 'Company'} Portal. Powered by TalentDraft.
       </footer>
 
     </div>
