@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnboardGo — Real-Time Candidate Tracking Guide</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap');
+
+    :root {
+      --bg-app: #f8fafc;
+      --bg-card: #ffffff;
+      --primary: #4f46e5;
+      --primary-light: #eef2ff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-light: #94a3b8;
+      --border-color: #e2e8f0;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --info: #0ea5e9;
+      --info-light: #f0f9ff;
+      --warning: #f59e0b;
+      --warning-light: #fffbeb;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(79, 70, 229, 0.05), 0 4px 6px -2px rgba(79, 70, 229, 0.02);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 40px;
+      position: relative;
+    }
+
+    .print-instructions {
+      background-color: var(--warning-light);
+      border: 1px solid #fde68a;
+      color: #92400e;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    p.subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-top: 35px;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary-light);
+    }
+
+    h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* Flowchart Container */
+    .flowchart-container {
+      background-color: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin: 24px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .flowchart-svg {
+      width: 100%;
+      height: auto;
+      max-width: 850px;
+    }
+
+    /* Interactive nodes styles */
+    .node-box {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .node-box:hover {
+      filter: drop-shadow(0 6px 12px rgba(79, 70, 229, 0.15));
+    }
+
+    /* Timeline Section */
+    .timeline {
+      position: relative;
+      margin: 30px 0;
+      padding-left: 30px;
+      border-left: 2px solid var(--primary-light);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -39px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: var(--bg-card);
+      border: 4px solid var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .timeline-item:hover::before {
+      background-color: var(--primary);
+      box-shadow: 0 0 8px rgba(79, 70, 229, 0.6);
+    }
+
+    .timeline-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .badge-sent { background-color: var(--info-light); color: var(--info); }
+    .badge-open { background-color: var(--primary-light); color: var(--primary); }
+    .badge-accept { background-color: var(--success-light); color: var(--success); }
+
+    .timeline-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .code-snippet {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      padding: 14px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+
+    /* File Table Style */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    /* Print styling rules */
+    @media print {
+      body {
+        background-color: #ffffff;
+        padding: 0;
+      }
+      .container {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+      .print-instructions {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="print-instructions">
+      <strong>🖨️ PDF Guide:</strong> Press <strong>Ctrl + P</strong> (Chrome/Edge), select <strong>"Save as PDF"</strong>, confirm <strong>"Background graphics"</strong> is checked, and hit Save.
+    </div>
+
+    <h1>🚀 OnboardGo — Real-Time Candidate Tracking Guide</h1>
+    <p class="subtitle">A detailed breakdown and technical roadmap explaining the logic, database layers, and workflow behind the real-time open and acceptance tracking architecture.</p>
+
+    <h2>📊 Tracking Workflow Flowchart</h2>
+    <div class="flowchart-container">
+      <svg class="flowchart-svg" viewBox="0 0 850 520" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background Definitions -->
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 2 L 10 5 L 0 8 z" fill="#64748b" />
+          </marker>
+        </defs>
+
+        <!-- HR Dashboard Block -->
+        <g class="node-box" id="node-hr">
+          <rect x="20" y="40" width="180" height="90" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" />
+          <text x="110" y="80" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="15" font-weight="bold" fill="#1e1b4b">HR Dashboard</text>
+          <text x="110" y="100" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#4f46e5">React SPA (Vite)</text>
+        </g>
+
+        <!-- Express API Server -->
+        <g class="node-box" id="node-server">
+          <rect x="320" y="40" width="200" height="90" rx="12" fill="#faf5ff" stroke="#a855f7" stroke-width="2" />
+          <text x="420" y="80" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="15" font-weight="bold" fill="#3b0764">Express Server</text>
+          <text x="420" y="100" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#a855f7">Backend (Node.js)</text>
+        </g>
+
+        <!-- MongoDB Database -->
+        <g class="node-box" id="node-db">
+          <rect x="620" y="40" width="200" height="90" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" />
+          <text x="720" y="70" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="15" font-weight="bold" fill="#14532d">MongoDB</text>
+          <text x="720" y="90" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#15803d">candidates / histories</text>
+          <text x="720" y="110" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#166534">Mongoose Models</text>
+        </g>
+
+        <!-- Candidate Inbox / Client -->
+        <g class="node-box" id="node-candidate">
+          <rect x="250" y="270" width="340" height="180" rx="16" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="2" />
+          <text x="420" y="305" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="16" font-weight="bold" fill="#0c4a6e">Candidate Experience Portal</text>
+          
+          <!-- Pixel subnode -->
+          <rect x="270" y="330" width="130" height="50" rx="8" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="335" y="353" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#0369a1">A. Email Pixel</text>
+          <text x="335" y="368" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#0284c7">1x1 GIF (Top of Body)</text>
+
+          <!-- Link subnode -->
+          <rect x="440" y="330" width="130" height="50" rx="8" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="505" y="353" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#0369a1">B. Online Link</text>
+          <text x="505" y="368" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#0284c7">Clickable CTA Button</text>
+
+          <!-- Acceptance subnode -->
+          <rect x="335" y="395" width="170" height="40" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
+          <text x="420" y="420" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#065f46">Accept Offer Click</text>
+        </g>
+
+        <!-- Connecting Lines / Paths -->
+        
+        <!-- HR Dashboard to Express Server (POST /send-campaign) -->
+        <path d="M 200 85 L 314 85" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="257" y="75" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">1. Send Campaign</text>
+
+        <!-- Express Server to Database (Create Pending Candidates) -->
+        <path d="M 520 85 L 614 85" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="570" y="75" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">2. Write Status="Sent"</text>
+
+        <!-- Express Server to Candidate Email (Send mail) -->
+        <path d="M 390 130 L 390 262" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="345" y="195" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">3. Mail Dispatch</text>
+
+        <!-- Candidate Open Pixel/Portal GET request back to Server -->
+        <path d="M 310 330 C 230 200 300 120 316 100" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrow)" />
+        <text x="210" y="210" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">4. Trigger: GET /track</text>
+
+        <!-- Express Server to DB (Write Opened status) -->
+        <path d="M 470 130 C 530 180 620 180 650 134" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="580" y="165" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">5. Write Status="Opened"</text>
+
+        <!-- Candidate Accept request to Server -->
+        <path d="M 505 415 C 620 400 580 200 514 133" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="610" y="270" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">6. Accept POST /accept</text>
+
+        <!-- Express Server to DB (Write Accepted status + History log) -->
+        <path d="M 490 130 C 530 150 630 140 670 132" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="580" y="142" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">7. Write "Accepted"</text>
+
+        <!-- Server SSE Push to Admin Dashboard -->
+        <path d="M 320 110 L 206 110" fill="none" stroke="#4f46e5" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="263" y="125" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#4f46e5">8. SSE Push Broadcast</text>
+      </svg>
+    </div>
+
+    <h2>🏁 Detailed Phase-by-Phase Roadmap</h2>
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-title">
+          Phase 1: Campaign Dispatch & DB Initialize
+          <span class="badge badge-sent">Sent Status</span>
+        </div>
+        <div class="timeline-desc">
+          When the HR manager clicks send, the backend registers candidates inside the database. It constructs an HTML email template inserting:
+          <ul>
+            <li><strong>Gmail-Safe Image Pixel</strong>: Placed at the very top of the body (Line 840) to load instantly without getting blocked by Gmail's 102KB clipping rules.</li>
+            <li><strong>Polished CTA Link</strong>: Inside the footer to access the unique, secure Candidate Portal.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-title">
+          Phase 2: Open Action Detection (Dual-Trigger)
+          <span class="badge badge-open">Opened Status</span>
+        </div>
+        <div class="timeline-desc">
+          Status is logged as <strong>Opened</strong> under two safe conditions:
+          <ul>
+            <li><strong>Pixel Hit</strong>: When the mail client loads the HTML body and calls <code>GET /api/email/track/:candidateId</code>.</li>
+            <li><strong>Portal Fallback Hit</strong>: If image loading is disabled, opening the portal URL triggers a frontend fetch to the track API, ensuring status is resolved regardless.</li>
+          </ul>
+        </div>
+        <div class="code-snippet">
+// MongoDB candidate status & timestamp write on email open:
+candidate.status = 'Opened';
+candidate.openedAt = new Date();
+await candidate.save();</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-title">
+          Phase 3: Digital Acceptance & Audit Log creation
+          <span class="badge badge-accept">Accepted Status</span>
+        </div>
+        <div class="timeline-desc">
+          When the candidate clicks <strong>"Accept Job Offer"</strong> on the web portal:
+          <ul>
+            <li>Updates the Candidate database status to <code>Accepted</code>.</li>
+            <li>Creates a permanent record in the <code>History</code> database collection to log the timestamp and signature audit trail event.</li>
+          </ul>
+        </div>
+        <div class="code-snippet">
+// Creates audit trial in History collection:
+await History.create({
+  campaignId: candidate.campaignId,
+  candidateName: candidate.name,
+  candidateEmail: candidate.email,
+  status: 'Accepted'
+});</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-title">
+          Phase 4: Real-Time Sync via Server-Sent Events (SSE)
+        </div>
+        <div class="timeline-desc">
+          Bina page refresh kiye dashboard status update karne ke liye SSE channel use kiya gaya hai.
+          <ul>
+            <li>Backend holds connections in the active <code>sseClients</code> collection.</li>
+            <li>On any status update, server broadcasts updates to frontend clients.</li>
+            <li>React client listener catches SSE push notifications and refreshes state variables dynamically.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <h2>📂 Source Code Files Reference Directory</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>File Path</th>
+          <th>Lines Range</th>
+          <th>Purpose & Database Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/backend/routes/email.js">backend/routes/email.js</a></td>
+          <td>840 - 875</td>
+          <td>Injects pixel image & <b>"View & Action Official Offer Letter"</b> button in email HTML content.</td>
+        </tr>
+        <tr>
+          <td><a href="file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/backend/routes/email.js">backend/routes/email.js</a></td>
+          <td>960 - 989</td>
+          <td><b>GET /track/:candidateId</b>: Updates <code>status = 'Opened'</code> & <code>openedAt = new Date()</code> in DB.</td>
+        </tr>
+        <tr>
+          <td><a href="file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/backend/routes/email.js">backend/routes/email.js</a></td>
+          <td>1119 - 1160</td>
+          <td><b>POST /accept</b>: Updates <code>status = 'Accepted'</code> in DB & saves audit trial log to <code>History</code> model.</td>
+        </tr>
+        <tr>
+          <td><a href="file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/components/PublicOfferPortal.jsx">frontend/src/components/PublicOfferPortal.jsx</a></td>
+          <td>37 & 75</td>
+          <td>Portal client triggers <b>GET /track</b> (open fallback tracking) and triggers POST to <b>/accept</b> API.</td>
+        </tr>
+        <tr>
+          <td><a href="file:///c:/Users/Shreyam/OneDrive/Desktop/OfferLetter%20Generator/frontend/src/context/AppContext.jsx">frontend/src/context/AppContext.jsx</a></td>
+          <td>99 - 136</td>
+          <td>Front-end SSE (EventSource) listener updates state lists dynamically when status broadcasts are received.</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+</body>
+</html>
