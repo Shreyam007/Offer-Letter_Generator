@@ -109,17 +109,115 @@
       background-color: #f8fafc;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 24px;
+      padding: 30px 20px;
       margin: 24px 0;
-      display: flex;
-      justify-content: center;
       box-shadow: var(--shadow-sm);
     }
 
-    .flowchart-svg {
-      width: 100%;
-      height: auto;
-      max-width: 850px;
+    .flowchart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 15px;
+    }
+
+    .flow-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .flow-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .flow-step-num {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .flow-card.step-1 { border-top: 5px solid var(--info); }
+    .flow-card.step-1 .flow-step-num { background: var(--info); }
+
+    .flow-card.step-2 { border-top: 5px solid var(--primary); }
+    .flow-card.step-2 .flow-step-num { background: var(--primary); }
+
+    .flow-card.step-3 { border-top: 5px solid #a855f7; }
+    .flow-card.step-3 .flow-step-num { background: #a855f7; }
+
+    .flow-card.step-4 { border-top: 5px solid var(--success); }
+    .flow-card.step-4 .flow-step-num { background: var(--success); }
+
+    .flow-card.step-5 { border-top: 5px solid var(--warning); }
+    .flow-card.step-5 .flow-step-num { background: var(--warning); }
+
+    .flow-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--text-main);
+      margin-top: 5px;
+    }
+
+    .flow-card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta-label {
+      font-weight: 600;
+      color: var(--text-muted);
+      width: 60px;
+      flex-shrink: 0;
+    }
+
+    .meta-tag {
+      background: #f1f5f9;
+      color: #334155;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .meta-tag.api { background: #fff1f2; color: #e11d48; }
+    .meta-tag.db { background: #f0fdf4; color: #16a34a; }
+    .meta-tag.file { background: #f0f9ff; color: #0284c7; }
+
+    .flow-card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
     }
 
     /* Interactive nodes styles */
@@ -255,92 +353,119 @@
     <h1>🚀 OnboardGo — Real-Time Candidate Tracking Guide</h1>
     <p class="subtitle">A detailed breakdown and technical roadmap explaining the logic, database layers, and workflow behind the real-time open and acceptance tracking architecture.</p>
 
-    <h2>📊 Tracking Workflow Flowchart</h2>
+    <h2>📊 Step-by-Step Interactive Roadmap Grid</h2>
     <div class="flowchart-container">
-      <svg class="flowchart-svg" viewBox="0 0 850 520" xmlns="http://www.w3.org/2000/svg">
-        <!-- Background Definitions -->
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 2 L 10 5 L 0 8 z" fill="#64748b" />
-          </marker>
-        </defs>
-
-        <!-- HR Dashboard Block -->
-        <g class="node-box" id="node-hr">
-          <rect x="20" y="40" width="180" height="90" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" />
-          <text x="110" y="80" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="15" font-weight="bold" fill="#1e1b4b">HR Dashboard</text>
-          <text x="110" y="100" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#4f46e5">React SPA (Vite)</text>
-        </g>
-
-        <!-- Express API Server -->
-        <g class="node-box" id="node-server">
-          <rect x="320" y="40" width="200" height="90" rx="12" fill="#faf5ff" stroke="#a855f7" stroke-width="2" />
-          <text x="420" y="80" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="15" font-weight="bold" fill="#3b0764">Express Server</text>
-          <text x="420" y="100" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#a855f7">Backend (Node.js)</text>
-        </g>
-
-        <!-- MongoDB Database -->
-        <g class="node-box" id="node-db">
-          <rect x="620" y="40" width="200" height="90" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" />
-          <text x="720" y="70" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="15" font-weight="bold" fill="#14532d">MongoDB</text>
-          <text x="720" y="90" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#15803d">candidates / histories</text>
-          <text x="720" y="110" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#166534">Mongoose Models</text>
-        </g>
-
-        <!-- Candidate Inbox / Client -->
-        <g class="node-box" id="node-candidate">
-          <rect x="250" y="270" width="340" height="180" rx="16" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="2" />
-          <text x="420" y="305" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="16" font-weight="bold" fill="#0c4a6e">Candidate Experience Portal</text>
-          
-          <!-- Pixel subnode -->
-          <rect x="270" y="330" width="130" height="50" rx="8" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5" />
-          <text x="335" y="353" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#0369a1">A. Email Pixel</text>
-          <text x="335" y="368" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#0284c7">1x1 GIF (Top of Body)</text>
-
-          <!-- Link subnode -->
-          <rect x="440" y="330" width="130" height="50" rx="8" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5" />
-          <text x="505" y="353" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#0369a1">B. Online Link</text>
-          <text x="505" y="368" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#0284c7">Clickable CTA Button</text>
-
-          <!-- Acceptance subnode -->
-          <rect x="335" y="395" width="170" height="40" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
-          <text x="420" y="420" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#065f46">Accept Offer Click</text>
-        </g>
-
-        <!-- Connecting Lines / Paths -->
+      <div class="flowchart-grid">
         
-        <!-- HR Dashboard to Express Server (POST /send-campaign) -->
-        <path d="M 200 85 L 314 85" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
-        <text x="257" y="75" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">1. Send Campaign</text>
+        <!-- Step 1 -->
+        <div class="flow-card step-1">
+          <div class="flow-step-num">1</div>
+          <div class="flow-card-title">HR Sends Campaign</div>
+          <div class="flow-card-meta">
+            <div class="meta-row">
+              <span class="meta-label">File Path:</span>
+              <span class="meta-tag file">frontend/src/components/PreviewSend.jsx</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Line No:</span>
+              <span class="meta-tag">468 (Trigger Call)</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">API URL:</span>
+              <span class="meta-tag api">POST /api/email/send-campaign</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Database:</span>
+              <span class="meta-tag db">Creates Candidate status="Sent"</span>
+            </div>
+          </div>
+          <div class="flow-card-desc">
+            HR sends the offer letters. Node.js backend writes candidates to MongoDB and dispatches emails with the top-injected tracking pixel.
+          </div>
+        </div>
 
-        <!-- Express Server to Database (Create Pending Candidates) -->
-        <path d="M 520 85 L 614 85" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
-        <text x="570" y="75" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">2. Write Status="Sent"</text>
+        <!-- Step 2 -->
+        <div class="flow-card step-2">
+          <div class="flow-step-num">2</div>
+          <div class="flow-card-title">Candidate Opens Email / Portal</div>
+          <div class="flow-card-meta">
+            <div class="meta-row">
+              <span class="meta-label">File Path:</span>
+              <span class="meta-tag file">backend/routes/email.js</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Line No:</span>
+              <span class="meta-tag">960 (Route definition)</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">API URL:</span>
+              <span class="meta-tag api">GET /api/email/track/:candidateId</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Database:</span>
+              <span class="meta-tag db">Updates status="Opened", sets openedAt</span>
+            </div>
+          </div>
+          <div class="flow-card-desc">
+            Candidate opens the email (pixel triggers) or visits the web link. The backend updates the MongoDB record instantly.
+          </div>
+        </div>
 
-        <!-- Express Server to Candidate Email (Send mail) -->
-        <path d="M 390 130 L 390 262" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
-        <text x="345" y="195" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">3. Mail Dispatch</text>
+        <!-- Step 3 -->
+        <div class="flow-card step-3">
+          <div class="flow-step-num">3</div>
+          <div class="flow-card-title">Real-Time Sync (SSE)</div>
+          <div class="flow-card-meta">
+            <div class="meta-row">
+              <span class="meta-label">File Path:</span>
+              <span class="meta-tag file">backend/routes/email.js</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Line No:</span>
+              <span class="meta-tag">986 (Server) / 99 (Client)</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">SSE Stream:</span>
+              <span class="meta-tag api">GET /api/email/track/events</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Database:</span>
+              <span class="meta-tag db">Pushes change to AppContext.jsx</span>
+            </div>
+          </div>
+          <div class="flow-card-desc">
+            The backend broadcasts the new status via Server-Sent Events. The HR admin dashboard instantly updates, showing the blue "Opened" badge.
+          </div>
+        </div>
 
-        <!-- Candidate Open Pixel/Portal GET request back to Server -->
-        <path d="M 310 330 C 230 200 300 120 316 100" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrow)" />
-        <text x="210" y="210" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">4. Trigger: GET /track</text>
+        <!-- Step 4 -->
+        <div class="flow-card step-4">
+          <div class="flow-step-num">4</div>
+          <div class="flow-card-title">Candidate Accepts Offer</div>
+          <div class="flow-card-meta">
+            <div class="meta-row">
+              <span class="meta-label">File Path:</span>
+              <span class="meta-tag file">frontend/src/components/PublicOfferPortal.jsx</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Line No:</span>
+              <span class="meta-tag">75 (Post Accept Call)</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">API URL:</span>
+              <span class="meta-tag api">POST /public/candidate-offer/:id/accept</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Database:</span>
+              <span class="meta-tag db">status="Accepted", creates History row</span>
+            </div>
+          </div>
+          <div class="flow-card-desc">
+            Candidate accepts the job offer on the web portal. Database records status as <b>Accepted</b> and inserts a permanent audit row inside the History model.
+          </div>
+        </div>
 
-        <!-- Express Server to DB (Write Opened status) -->
-        <path d="M 470 130 C 530 180 620 180 650 134" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
-        <text x="580" y="165" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">5. Write Status="Opened"</text>
-
-        <!-- Candidate Accept request to Server -->
-        <path d="M 505 415 C 620 400 580 200 514 133" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
-        <text x="610" y="270" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">6. Accept POST /accept</text>
-
-        <!-- Express Server to DB (Write Accepted status + History log) -->
-        <path d="M 490 130 C 530 150 630 140 670 132" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
-        <text x="580" y="142" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#475569">7. Write "Accepted"</text>
-
-        <!-- Server SSE Push to Admin Dashboard -->
-        <path d="M 320 110 L 206 110" fill="none" stroke="#4f46e5" stroke-width="2" marker-end="url(#arrow)" />
-        <text x="263" y="125" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#4f46e5">8. SSE Push Broadcast</text>
-      </svg>
+      </div>
     </div>
 
     <h2>🏁 Detailed Phase-by-Phase Roadmap</h2>
