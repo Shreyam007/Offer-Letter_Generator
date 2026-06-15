@@ -341,6 +341,45 @@
         display: none;
       }
     }
+
+    /* Chill Hinglish section styling */
+    .chill-explain {
+      background-color: #fffbeb; /* Amber-50 */
+      border: 2px dashed #d97706; /* Amber-600 */
+      border-radius: var(--radius-md);
+      padding: 30px 24px;
+      margin: 35px 0;
+    }
+    .chill-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #b45309;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chill-p {
+      font-size: 14px;
+      color: #78350f;
+      margin-bottom: 12px;
+    }
+    .chill-step {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 18px;
+      margin-top: 15px;
+      border-left: 5px solid #d97706;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .chill-step-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      color: #92400e;
+      font-size: 15px;
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 <body>
@@ -540,6 +579,32 @@ await History.create({
         </div>
       </div>
 
+    </div>
+
+    <!-- Chill Hinglish Explanation Section -->
+    <div class="chill-explain">
+      <div class="chill-title">💬 Tracking Feature Explained in Chill Hinglish (Like explaining to a Friend)</div>
+      <p class="chill-p">Bhai, simple words me samjho ki ye email tracking aur portal acceptance feature backend aur database ke sath kaise kaam karta hai:</p>
+      
+      <div class="chill-step">
+        <div class="chill-step-title">1. Email Pixel Ka Khel (Open Tracking)</div>
+        <p class="chill-p">Sabse pehle, jab hum email send karte hain, toh email body ke bilkul upar hum ek chota sa invisible pixel image (1x1 transparent GIF) daal dete hain. Is pixel ka link backend API <code>/api/email/track/:candidateId</code> se linked hota hai. Jaise hi candidate apna email open karega, mail app us image ko load karne ke liye backend ko hit karega, aur backend samajh jayega ki candidate ne email open kar liya hai!</p>
+      </div>
+
+      <div class="chill-step">
+        <div class="chill-step-title">2. Portal Ka Backup Hook (Dual-Trigger)</div>
+        <p class="chill-p">Agar candidate ka mail client image block kar deta hai, toh pixel hit nahi hota. But koi tension nahi! Email me hum candidate portal ka personal link dete hain. Jaise hi candidate link par click karke portal <code>PublicOfferPortal.jsx</code> par aayega, page load hote hi direct backend ko refresh call chala jata hai aur database me status update ho kar **"Opened"** ho jata hai. Isse tracking 100% fail-proof banti hai.</p>
+      </div>
+
+      <div class="chill-step">
+        <div class="chill-step-title">3. MongoDB me Updates</div>
+        <p class="chill-p">Jab open trigger hota hai, backend database me <code>Candidate</code> model ke under status ko <code>'Opened'</code> kar deta hai aur <code>openedAt</code> me usi time ka date-time stamp save kar leta hai. Jab candidate <b>"Accept Job Offer"</b> par click karta hai, toh status update ho kar <code>'Accepted'</code> ho jata hai, aur sath hi permanent record ke liye <code>History</code> database collection me naya document insert ho jata hai.</p>
+      </div>
+
+      <div class="chill-step">
+        <div class="chill-step-title">4. SSE Live Updates (Bin Reload kiye Dashboard Sync)</div>
+        <p class="chill-p">Bhai, sabse mast chiz hai real-time sync. Humne WebSockets ke badle lightweight <b>Server-Sent Events (SSE)</b> pipeline lagayi hai. Jaise hi database me candidate ka status change hota hai, backend active SSE socket streams ke zariye instant signal bhejta hai. Admin Dashboard par React listener bina page refresh kiye candidate row ko automatically update kar deta hai!</p>
+      </div>
     </div>
 
     <h2>📂 Source Code Files Reference Directory</h2>
